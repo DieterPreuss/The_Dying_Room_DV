@@ -4,96 +4,84 @@ __lua__
 --the dying room
 
 function _init()
-	p={
+
+	player={
 	 x=64,
 	 y=64,
 	 dx=0,
 	 dy=0,
-	 d="idle",
-	 update=playerupdate,
-  sprt=2,
-  draw=playerdraw,
+	 d=0,
   sh=2,
   sw=2,
   f=0,
   anims={
 	  idle={fr=1,2},
-			walkdown={fr=6,2,4,36,2,4,36},
-			walkup={fr=6,2,4,36,2,4,36},
-			walkleft={fr=6,2,4,36,2,4,36},
-			walkright={fr=6,2,4,36,2,4,36},
+			walkdown={fr=6,0,2,4,0,2,4},
+			walkup={fr=6,32,34,36,32,34,36},
+			walkleft={fr=6,6,8,10,6,8,10},
+			walkright={fr=6,6,8,10,6,8,10},
   }
  }
- add(player)
+
 end
 
 function _draw()
-    cls()
-    
-    -- move camera to current room
---    room_x = flr(x/16)
---    room_y = flr(y/16)
---    camera(room_x*128,room_y*128)
-    
-    -- draw the whole map (128⁙32)
-    map()
-    
-    direction=p.d
-	if(direction=="walkup") then
-		 fr=p.anims.walkup[2]
-	end
-	if(direction=="walkdown") then
-		 fr=p.anims.walkdown[2]
-	end
-	if(direction=="walkleft") then
-		 fr=p.anims.walkleft[2]
-	end
-	if(direction=="walkright") then
-		 fr=p.anims.walkright[2]
-	end
+ cls()
+	
+	-- move camera to current room
+	room_x = flr(player.x/16)
+	room_y = flr(player.y/16)
+	camera(room_x*128,room_y*128)
+	
+	-- draw the whole map (128⁙32)
+	map()
+	
+	--check direction
+	if (player.d==1) sprt= player.walkleft
+	if (player.d==2) sprt= player.walkright
+	if (player.d==3) sprt= player.walkup
+	if (player.d==4) sprt= player.walkdown
+		
+	
 	-- draw the player
-    spr(fr,  	-- frame index
-     p.x*8-4,p.y*8-4, -- x,y (pixels)
-     2,2--,d==-1	-- w,h, flip
-    )
-    --[[ draw the player
-    spr(1+f,  	-- frame index
-     x*8-4,y*8-4, -- x,y (pixels)
-     1,1,d==-1	-- w,h, flip
-    )]]
+	spr(sprt[sprt[2]+(f*2)],      -- frame index
+	 player.x*8-4,player.y*8-4, -- x,y (pixels)
+	 2,2,d==1    -- w,h, flip
+	)
 end
 
 function _update()
     
-    ac=0.1 -- acceleration
-    
-    if (btn(⬅️)) p.dx-= ac p.d="walkleft"
-    if (btn(➡️)) p.dx+= ac p.d="walkright"
-    if (btn(⬆️)) p.dy-= ac p.d="walkup"
-    if (btn(⬇️)) p.dy+= ac p.d="walkdown"
-    
-    -- move (add velocity)
-    p.x+=p.dx p.y+=p.dy
-    
-    -- friction (lower for more)
-    p.dx *=.7
-    p.dy *=.7
-    
-    -- advance animation according
-    -- to speed (or reset when
-    -- standing almost still)
-    spd=sqrt(p.dx*p.dx+p.dy*p.dy)
-    p.f= (p.f+spd*2) % 4 -- 4 frames
-    if (spd < 0.05) p.f=0
+ ac=0.1 -- acceleration
+	
+	if (btn(⬅️)) player.dx-= ac player.d= 1
+	if (btn(➡️)) player.dx+= ac player.d= 2
+	if (btn(⬆️)) player.dy-= ac player.d= 3
+	if (btn(⬇️)) player.dy+= ac player.d= 4
+	
+	-- move (add velocity)
+	player.x+=player.dx player.y+=player.dy
+	
+	-- friction (lower for more)
+	player.dx *=.7
+	player.dy *=.7
+	
+	-- advance animation according
+	-- to speed (or reset when
+	-- standing almost still)
+	spd=sqrt(player.dx*player.dx+player.dy*player.dy)
+	player.f= (player.f+spd*2) % 6 -- 6 frames
+	if (spd < 0.05) f=0
+	
+	-- collect apple
+	if (mget(player.x,player.y)==10) then
+		mset(player.x,player.y,14)
+		sfx(0)
+	end
     
     
 end
 
---[[
-function playerupdate(p)
-
-end
-]]
 
 __gfx__
 00000008800000000000000880000000000000088000000000000008800000000000000880000000000000088000000000000000a000000000000000a0000000
