@@ -37,10 +37,15 @@ function _draw()
 	map()
 	
 	--check direction
-	if (player.d==1) sprt= player.walkleft
-	if (player.d==2) sprt= player.walkright
-	if (player.d==3) sprt= player.walkup
-	if (player.d==4) sprt= player.walkdown
+	if (player.d==1) then
+		sprt= player.walkleft
+	elseif (player.d==2) then
+		sprt= player.walkright
+	elseif (player.d==3) then
+		sprt= player.walkup
+	elseif (player.d==4) then
+		sprt= player.walkdown
+	end	
 		
 	
 	-- draw the player
@@ -54,10 +59,22 @@ function _update()
     
  ac=0.1 -- acceleration
 	
-	if (btn(⬅️)) player.dx-= ac player.d= 1
-	if (btn(➡️)) player.dx+= ac player.d= 2
-	if (btn(⬆️)) player.dy-= ac player.d= 3
-	if (btn(⬇️)) player.dy+= ac player.d= 4
+	if (btn(⬅️)) then
+		player.dx-= ac 
+		player.d= 1
+	end
+	if (btn(➡️)) then
+		player.dx+= ac 
+		player.d= 2
+	end
+	if (btn(⬆️)) then
+		player.dy-= ac 
+		player.d= 3
+	end	
+	if (btn(⬇️)) then
+		player.dy+= ac 
+		player.d= 4
+	end	
 	
 	-- move (add velocity)
 	player.x+=player.dx player.y+=player.dy
