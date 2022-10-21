@@ -3,6 +3,8 @@ version 38
 __lua__
 --the dying room
 
+objs = {}                    --a list of all the objects in the game (starts empty)
+
 function _init()
 
 	player={
@@ -10,7 +12,7 @@ function _init()
 	 y=64,
 	 dx=0,
 	 dy=0,
-	 d=0,
+	 d="idle",
   sh=2,
   sw=2,
   f=0,
@@ -22,11 +24,15 @@ function _init()
 			walkright={fr=6,6,8,10,6,8,10},
   }
  }
+ add(objs,player) 
+ print_centered(player.f)
 
 end
 
 function _draw()
  cls()
+	
+	--player=objs.player
 	
 	-- move camera to current room
 	room_x = flr(player.x/16)
@@ -35,45 +41,53 @@ function _draw()
 	
 	-- draw the whole map (128⁙32)
 	map()
-	
-	--check direction
-	if (player.d==1) then
-		sprt= player.walkleft
-	elseif (player.d==2) then
-		sprt= player.walkright
-	elseif (player.d==3) then
-		sprt= player.walkup
-	elseif (player.d==4) then
-		sprt= player.walkdown
-	end	
+	--print('frames: '..player.f, 0, 120, 8)
+	--[[check direction
+	if (player.d=="walkleft") then
+		sprt= player.anims.walkleft
+	elseif (player.d=="walkright") then
+		sprt= player.anims.walkright
+	elseif (player.d=="walkup") then
+		sprt= player.anims.walkup
+	elseif (player.d=="walkdown") then
+		sprt= player.anims.walkdown
+	else
+		sprt= player.anims.idle
+	end	]]
 		
 	
-	-- draw the player
-	spr(sprt[sprt[2]+(f*2)],      -- frame index
+	--[[ draw the player
+	spr(sprt[sprt[2]+(player.f*2)],      -- frame index
 	 player.x*8-4,player.y*8-4, -- x,y (pixels)
 	 2,2,d==1    -- w,h, flip
+	)]]
+	-- draw the player
+	spr(player.anims[player.d][2+(player.f*2)],      -- frame index
+	 player.x*8-4,player.y*8-4, -- x,y (pixels)
+	 2,2,d=="walkleft"    -- w,h, flip
 	)
 end
 
 function _update()
     
  ac=0.1 -- acceleration
+ --player=objs.player
 	
 	if (btn(⬅️)) then
 		player.dx-= ac 
-		player.d= 1
+		player.d= "walkleft"
 	end
 	if (btn(➡️)) then
 		player.dx+= ac 
-		player.d= 2
+		player.d= "walkright"
 	end
 	if (btn(⬆️)) then
 		player.dy-= ac 
-		player.d= 3
+		player.d= "walkup"
 	end	
 	if (btn(⬇️)) then
 		player.dy+= ac 
-		player.d= 4
+		player.d= "walkdown"
 	end	
 	
 	-- move (add velocity)
@@ -87,7 +101,7 @@ function _update()
 	-- to speed (or reset when
 	-- standing almost still)
 	spd=sqrt(player.dx*player.dx+player.dy*player.dy)
-	player.f= (player.f+spd*2) % 6 -- 6 frames
+	player.f= (player.f+spd*2) % player.anims[player.d][1] -- 6 frames
 	if (spd < 0.05) f=0
 	
 	-- collect apple
@@ -99,7 +113,9 @@ function _update()
     
 end
 
-
+function print_centered(str)
+  print(str, 2, 2, 8) 
+end
 __gfx__
 00000008800000000000000880000000000000088000000000000008800000000000000880000000000000088000000000000000a000000000000000a0000000
 0000009888a000000000009888900000000000988890000000000009888000000000000988800000000000098880000000000a0a9a0a000000000a0a9a0a0000
