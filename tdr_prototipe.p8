@@ -3,10 +3,14 @@ version 38
 __lua__
 --the dying room
 
-objs = {}                    --a list of all the objects in the game (starts empty)
+objs = {}  --a list of all the objects in the game (starts empty)
+actor = {} -- all actors
+wpns = {}  --list of weapons
+
 
 function _init()
 
+	--create player
 	player={
 	 x=7,
 	 y=10,
@@ -34,7 +38,20 @@ function _init()
 			walkright={fr=5,6,8,10,6,8,10},
   }
  }
- add(objs,player) 
+ add(actor,player)
+ 
+ --create spear
+
+ spear={
+ 	x=player.x
+ 	y=player.y
+ 	sprt={
+ 		h={160,w=3,h=1}
+ 		v={147,w=1,h=3}
+ 	}
+ }
+ 
+ add(wpns, spear)  
 	
 end
 
@@ -82,6 +99,12 @@ function _update()
 	if (btn(⬇️)) then
 		player.dy+= ac 
 		player.d= "walkdown"
+	end
+	if (btn(🅾️)) then
+		spear_attack()
+	end
+	if (btn(❎)) then
+
 	end	
 	
 	-- move (add velocity)
@@ -145,12 +168,54 @@ function draw_gui()
 end
 
 function draw_spear()
-
+			
+			--decides the sprite needed
+			if (player.d= "walkleft") then
+				sprt=spear.sprt.h
+			elseif(player.d= "walkright")
+				sprt=spear.sprt.h
+			else
+				sprt=spear.sprt.v
+			end
+			
+			--decides if sprites needs switching
+			if (player.d= "walkright") then
+				switch=false
+			elseif(player.d= "walkup")
+				switch=false
+			else
+				switch=true
+			end
+			
+			
+			
 			--character
-   spr(104,
-   player.x*8+2,
-   player.y*8+1,
-   2,2,player.d=="walkright")
+   spr(sprt[1],
+   spear.x*8+2,
+   spear.y*8+1,
+   sprt.w,sprt.h,switch)
+	 
+end
+
+function spear_attack()
+
+	for i=0,15 do
+  if (player.d= "walkleft") then
+  	spear.x=spear.x+i
+  end
+  if (player.d= "walkright") then
+  	spear.x=spear.x-i
+  end
+  if (player.d= "walkup") then
+  	spear.y=spear.y+i
+  end
+  if player.d= "walkdown"() then
+  	spear.y=spear.y-i
+  end
+  if (player.d= "idle") then
+  	spear.y=spear.y-i
+  end
+	end
 	 
 end
 -->8
