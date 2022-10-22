@@ -75,7 +75,7 @@ function _draw()
 	
 	draw_gui()
 	
---	draw_spear()
+ draw_spear()
 	
 end
 
@@ -135,7 +135,9 @@ function _update()
 	player.dx *=.7
 	player.dy *=.7
 	
+	-----------------------------
 	
+	-----------------------------
 	
 	-- advance animation according
 	-- to speed (or reset when
@@ -169,25 +171,26 @@ end
 
 function draw_spear()
 			
-			--decides the sprite needed
-			if (player.d== "walkleft") then
+			--------------sprite and position---------------
+			spear.x=player.x
+ 		spear.y=player.y
+ 		if (player.d== "walkleft") then
 				sprt=spear.sprt.h
-			elseif(player.d== "walkright")
+				switch=true
+			elseif(player.d== "walkright") then
 				sprt=spear.sprt.h
+				switch=false
+			elseif(player.d== "walkup") then
+				sprt=spear.sprt.v
+				switch=false
+			elseif(player.d== "walkdown") then
+				sprt=spear.sprt.v
+				switch=true
 			else
 				sprt=spear.sprt.v
-			end
-			
-			--decides if sprites needs switching
-			if (player.d== "walkright") then
-				switch=false
-			elseif(player.d== "walkup")
-				switch=false
-			else
 				switch=true
 			end
-			
-			
+			-----------------------------	
 			
 			--character
    spr(sprt[1],
@@ -200,19 +203,19 @@ end
 function spear_attack()
 
 	for i=0,15 do
-  if (player.d= "walkleft") then
+  if (player.d== "walkleft") then
   	spear.x=spear.x+i
   end
-  if (player.d= "walkright") then
+  if (player.d== "walkright") then
   	spear.x=spear.x-i
   end
-  if (player.d= "walkup") then
+  if (player.d== "walkup") then
   	spear.y=spear.y+i
   end
-  if player.d= "walkdown"() then
+  if (player.d== "walkdown") then
   	spear.y=spear.y-i
   end
-  if (player.d= "idle") then
+  if (player.d== "idle") then
   	spear.y=spear.y-i
   end
 	end
