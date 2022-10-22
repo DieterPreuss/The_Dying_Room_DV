@@ -58,7 +58,7 @@ function _draw()
 	
 	draw_gui()
 	
-	draw_spear()
+--	draw_spear()
 	
 end
 
