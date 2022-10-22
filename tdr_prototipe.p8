@@ -175,8 +175,8 @@ function draw_spear()
 			--------------sprite and position---------------
 			
  		if (player.d== "walkleft") then
-				spear.x=player.x-2
- 			spear.y=player.y+0.5
+				spear.x=player.x-2.5
+ 			spear.y=player.y
 				sprt=spear.sprt.h
 				switch=true
 			elseif(player.d== "walkright") then
@@ -190,9 +190,13 @@ function draw_spear()
 				sprt=spear.sprt.vu
 				switch=false
 			elseif(player.d== "walkdown") then
+				spear.x=player.x+0.6
+ 			spear.y=player.y+0.3
 				sprt=spear.sprt.vd
 				switch=true
 			else
+				spear.x=player.x+0.6
+ 			spear.y=player.y+0.3
 				sprt=spear.sprt.vd
 				switch=true
 			end
