@@ -43,12 +43,12 @@ function _init()
  --create spear
 
  spear={
- 	x=player.x
- 	y=player.y
+ 	x=player.x,
+ 	y=player.y,
  	sprt={
- 		h={160,w=3,h=1}
- 		v={147,w=1,h=3}
- 	}
+ 		h={160,w=3,h=1},
+ 		v={147,w=1,h=3},
+ 	},
  }
  
  add(wpns, spear)  
@@ -170,18 +170,18 @@ end
 function draw_spear()
 			
 			--decides the sprite needed
-			if (player.d= "walkleft") then
+			if (player.d== "walkleft") then
 				sprt=spear.sprt.h
-			elseif(player.d= "walkright")
+			elseif(player.d== "walkright")
 				sprt=spear.sprt.h
 			else
 				sprt=spear.sprt.v
 			end
 			
 			--decides if sprites needs switching
-			if (player.d= "walkright") then
+			if (player.d== "walkright") then
 				switch=false
-			elseif(player.d= "walkup")
+			elseif(player.d== "walkup")
 				switch=false
 			else
 				switch=true
