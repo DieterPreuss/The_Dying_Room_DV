@@ -132,8 +132,8 @@ function _update()
 	---------------------------
 	
 	-- friction (lower for more)
-	player.dx *=.7
-	player.dy *=.7
+	player.dx *=.3
+	player.dy *=.3
 	
 	-----------------------------
 	
