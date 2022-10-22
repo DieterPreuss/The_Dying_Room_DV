@@ -46,8 +46,9 @@ function _init()
  	x=player.x,
  	y=player.y,
  	sprt={
- 		h={160,w=3,h=1},
- 		v={147,w=1,h=3},
+ 		h={160,w=3,h=1}, 		
+ 		vu={147,w=1,h=3},
+ 		vd={148,w=1,h=3},
  	},
  }
  
@@ -172,22 +173,27 @@ end
 function draw_spear()
 			
 			--------------sprite and position---------------
-			spear.x=player.x
- 		spear.y=player.y
+			
  		if (player.d== "walkleft") then
+				spear.x=player.x-2
+ 			spear.y=player.y+0.5
 				sprt=spear.sprt.h
 				switch=true
 			elseif(player.d== "walkright") then
+				spear.x=player.x+0.1
+				spear.y=player.y+0.5
 				sprt=spear.sprt.h
 				switch=false
 			elseif(player.d== "walkup") then
-				sprt=spear.sprt.v
+				spear.x=player.x-1
+ 			spear.y=player.y-1.7
+				sprt=spear.sprt.vu
 				switch=false
 			elseif(player.d== "walkdown") then
-				sprt=spear.sprt.v
+				sprt=spear.sprt.vd
 				switch=true
 			else
-				sprt=spear.sprt.v
+				sprt=spear.sprt.vd
 				switch=true
 			end
 			-----------------------------	
