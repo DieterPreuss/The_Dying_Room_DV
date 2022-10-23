@@ -32,7 +32,7 @@ function _init()
   hp=4,
   cooldown={
   	attack=0,
-  	action=0,
+  	action=0
   },
   anims={
 	  idle={fr=1,0},
@@ -50,13 +50,17 @@ function _init()
  	x=player.x,
  	y=player.y,
  	sprt={
- 		h={160,w=3,h=1}, 		
- 		vu={147,w=1,h=3},
- 		vd={148,w=1,h=3},
+ 		h={114,w=3,h=1}, 		
+ 		vu={66,w=1,h=3},
+ 		vd={67,w=1,h=3},
  	},
  }
  
- add(wpns, spear)  
+ add(wpns, spear) 
+ 
+ --create boss
+ 
+ spawn_boss(1) 
 	
 end
 
@@ -79,9 +83,13 @@ function _draw()
 	 2,2,player.d=="walkright"    -- w,h, flip
 	)
 	
+	--print_centered(player.cooldown.attack)
+	
 	draw_gui()
 	
  draw_spear()
+ 
+ draw_boss(1)
 	
 end
 
@@ -106,11 +114,10 @@ function _update()
 		player.dy+= ac 
 		player.d= "walkdown"
 	end
-	
+
 	if (btn(🅾️) and spear.x<player.x+1 and spear.y<player.y+1 and spear.x>player.x-3 and spear.y>player.y-2 and player.cooldown.attack==0) then
-		player.cooldown.attack=500
 		spear_attack()
-		
+		player.cooldown.attack=10
 	end
 	
 	if (btn(❎)) then
@@ -146,8 +153,7 @@ function _update()
 	player.dy *=.3
 	
 	-----------------------------
-	if(player.cooldown.attack>0) player.cooldown.attack-=player.cooldown.attack
-	--if(player.cooldown.attack==0) player.cooldown.attack
+	if(player.cooldown.attack!=0) player.cooldown.attack=player.cooldown.attack-1
 	-----------------------------
 	
 	-- advance animation according
@@ -167,7 +173,7 @@ function _update()
 end
 
 function print_centered(str)
-  print(str, player.x,player.y, 8) 
+  print(str, player.x*8,player.y*8-9, 8) 
 end
 
 function draw_gui()
@@ -185,7 +191,7 @@ function draw_spear()
 			--------------sprite and position---------------
 			
  		if (player.d== "walkleft") then
-				if (player.cooldown.attack!=0) then
+				if(player.cooldown.attack==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x-2.5
  				spear.y=player.y
@@ -193,7 +199,7 @@ function draw_spear()
 				sprt=spear.sprt.h
 				switch=true
 			elseif(player.d== "walkright") then
-				if (player.cooldown.attack!=0) then
+				if(player.cooldown.attack==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x+0.1
 					spear.y=player.y+0.5
@@ -201,7 +207,7 @@ function draw_spear()
 				sprt=spear.sprt.h
 				switch=false
 			elseif(player.d== "walkup") then
-				if (player.cooldown.attack!=0) then
+				if(player.cooldown.attack==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x-1
  				spear.y=player.y-1.7
@@ -209,7 +215,7 @@ function draw_spear()
 				sprt=spear.sprt.vu
 				switch=false
 			elseif(player.d== "walkdown") then
-				if (player.cooldown.attack!=0) then
+				if(player.cooldown.attack==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x+0.6
  				spear.y=player.y+0.3
@@ -217,7 +223,8 @@ function draw_spear()
 				sprt=spear.sprt.vd
 				switch=true
 			else
-				if not btn(🅾️) then
+				if(player.cooldown.attack==0) then
+				--if not btn(🅾️) then
 					spear.x=player.x+0.6
  				spear.y=player.y+0.3
  			end
@@ -380,6 +387,87 @@ function collide_event(a1,a2)
 	
 	return false
 end
+-->8
+function spawn_boss(n)
+
+	if (n==1) then
+		--create boss 1
+	boss1={
+	 x=7,
+	 y=2,
+	 dx=0,
+	 dy=0,
+	 d="idle",
+  sh=2,
+  sw=2,
+  --------------
+  bounce=0.5,
+  -- half-width and half-height
+		-- slightly less than 0.5 so
+		-- that will fit through 1-wide
+		-- holes.
+		w=0.4,
+		h=0.4,
+  -------------
+  f=0,
+  hp=8,
+  cooldown={
+  	attack1=0,
+  	attack2=0
+  },
+  anims={
+	  idle={fr=1,12},
+			walkdown={fr=5,12,14,64,12,14,64},
+			walkup={fr=5,44,46,96,44,46,96},
+			walkleft={fr=5,38,40,42,38,40,42},
+			walkright={fr=5,38,40,42,38,40,42},
+  }
+ }
+ add(actor,boss1)
+ 
+ 
+ 
+ 
+	end
+
+end
+
+function draw_boss(n)
+	if (n==1) then
+		
+		ac=0.1 -- acceleration
+		
+		if not solid_a(boss1, boss1.dx, 0) then
+			boss1.x += boss1.dx
+		else
+			boss1.dx *= -boss1.bounce
+		end
+
+		if not solid_a(boss1, 0, boss1.dy) then
+			boss1.y += boss1.dy
+		else
+			boss1.dy *= -boss1.bounce
+		end
+		
+		-- friction (lower for more)
+	boss1.dx *=.5
+	boss1.dy *=.5
+	
+	spd=sqrt(boss1.dx*boss1.dx+boss1.dy*boss1.dy)
+	boss1.f= (boss1.f+spd*2) % boss1.anims[boss1.d].fr -- 6 frames
+	if (spd < 0.05) f=0
+	
+	-----------------------------
+	if(boss1.cooldown.attack1!=0) boss1.cooldown.attack1=boss1.cooldown.attack1-1
+	
+		spr(boss1.anims[boss1.d][2+(flr(boss1.f))],--*2)],      -- frame index
+	 	boss1.x*8-4,boss1.y*8-4, -- x,y (pixels)
+	 	2,2,boss1.d=="walkright"    -- w,h, flip
+		)	
+	end
+end
+
+
 __gfx__
 00020028820022000020002882200002000000288220022000200028822000200000002882200020000000288220000200000808a808000000080808a8080000
 0002029888a202000200029888920020000002988892020000020029888202000000002988820200000000298882002000808a8a9a8a800000008a8a9a8a8080
