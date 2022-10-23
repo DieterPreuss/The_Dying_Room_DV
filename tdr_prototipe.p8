@@ -101,7 +101,7 @@ function _update()
 		player.dy+= ac 
 		player.d= "walkdown"
 	end
-	if (btn(🅾️)) then
+	if (btn(🅾️) and spear.x<player.x+1 and spear.y<player.y+1 and spear.x>player.x-3 and spear.y>player.y-2) then
 		spear_attack()
 	end
 	if (btn(❎)) then
@@ -175,24 +175,38 @@ function draw_spear()
 			--------------sprite and position---------------
 			
  		if (player.d== "walkleft") then
-				spear.x=player.x-2
- 			spear.y=player.y+0.5
+				if not btn(🅾️) then
+					spear.x=player.x-2.5
+ 				spear.y=player.y
+ 			end
 				sprt=spear.sprt.h
 				switch=true
 			elseif(player.d== "walkright") then
-				spear.x=player.x+0.1
-				spear.y=player.y+0.5
+				if not btn(🅾️) then
+					spear.x=player.x+0.1
+					spear.y=player.y+0.5
+				end
 				sprt=spear.sprt.h
 				switch=false
 			elseif(player.d== "walkup") then
-				spear.x=player.x-1
- 			spear.y=player.y-1.7
+				if not btn(🅾️) then
+					spear.x=player.x-1
+ 				spear.y=player.y-1.7
+ 			end
 				sprt=spear.sprt.vu
 				switch=false
 			elseif(player.d== "walkdown") then
+				if not btn(🅾️) then
+					spear.x=player.x+0.6
+ 				spear.y=player.y+0.3
+ 			end
 				sprt=spear.sprt.vd
 				switch=true
 			else
+				if not btn(🅾️) then
+					spear.x=player.x+0.6
+ 				spear.y=player.y+0.3
+ 			end
 				sprt=spear.sprt.vd
 				switch=true
 			end
@@ -210,19 +224,19 @@ function spear_attack()
 
 	for i=0,15 do
   if (player.d== "walkleft") then
-  	spear.x=spear.x+i
+  	spear.x=spear.x-(i*0.01) 
   end
   if (player.d== "walkright") then
-  	spear.x=spear.x-i
+  	spear.x=spear.x+(i*0.01) 
   end
   if (player.d== "walkup") then
-  	spear.y=spear.y+i
+  	spear.y=spear.y-(i*0.01) 
   end
   if (player.d== "walkdown") then
-  	spear.y=spear.y-i
+  	spear.y=spear.y+(i*0.01) 
   end
   if (player.d== "idle") then
-  	spear.y=spear.y-i
+  	spear.y=spear.y+(i*0.01) 
   end
 	end
 	 
@@ -483,7 +497,7 @@ __gfx__
 066505550fff5ffffffffff00f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
-0000000202000000000000000000000000000000000202000000000000000000000000000000000202020200000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000202000000000000000000000000000002000202000000000000000000000002000000000202020200000000000000000002000000000200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 a5a7a7a7a7a7a7a7a7a7a7a7a78586a600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 a88182808080808080808080809596b900000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
