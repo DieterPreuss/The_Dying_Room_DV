@@ -97,7 +97,7 @@ function _draw()
 	map()
 	--map(0,0,0,0,7,7)
 	print_centered(player.cooldown.attack)
-	print_centered(wpnbox[player.weapon])
+	--print_centered(wpnbox[player.weapon])
 	
 	-- draw the player
 	spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
