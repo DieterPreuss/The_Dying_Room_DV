@@ -29,7 +29,9 @@ function _init()
 		h=0.4,
   -------------
   f=0,
-  hp=4,
+  hp="three",
+  item="potion",
+  weapon="spear",
   cooldown={
   	attack=0,
   	action=0
@@ -56,7 +58,26 @@ function _init()
  	},
  }
  
- add(wpns, spear) 
+ add(wpns, spear)
+ 
+ healthbar={
+ 	four={140,140,140},
+ 	three={140,140,141},
+ 	two={140,141,139},
+ 	one={140,155,140},
+ 	zero={0}
+ }
+ 
+ itembox={
+ 	potion=171,
+ 	bomb=170,
+ 	knife=144
+ }
+ 
+ wpnbox={
+ 	spear={156, w=1, h=2},
+ 	sword={157, w=1, h=2}
+ } 
  
  --create boss
  
@@ -121,7 +142,8 @@ function _update()
 	end
 	
 	if (btn(❎)) then
-
+		player.hp="two"
+		
 	end	
 	
 	-- move (add velocity)
@@ -177,12 +199,31 @@ function print_centered(str)
 end
 
 function draw_gui()
-
+			
+			
 			--character
    spr(135,0,0,2,2)
    
    --healthbar
-   spr(187-((player.hp-1)*16),14,8,4,1) 
+   vacumx=25
+	 	if (player.hp!="zero") then
+				for v in all(healthbar[player.hp]) do
+  			vacumx=vacumx+9
+  			spr(v,vacumx,10,1,1)
+				end 	
+	 	else
+	 		cls(6)
+	 		print_centered('has muerto')
+	 	end
+	 	
+	 	--itembox
+	 	spr(itembox[player.item],22,0,1,1)
+	 	
+	 	--hp
+	 	spr(153,24,9,1,1)
+	 	
+	 	--weaponbox
+	 	spr(wpnbox[player.weapon],17,0,1,1)
 	 
 end
 
@@ -388,6 +429,8 @@ function collide_event(a1,a2)
 	return false
 end
 -->8
+--bosses
+
 function spawn_boss(n)
 
 	if (n==1) then
