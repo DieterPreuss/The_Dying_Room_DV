@@ -97,6 +97,7 @@ function _draw()
 	map()
 	--map(0,0,0,0,7,7)
 	print_centered(player.cooldown.attack)
+	print_centered(wpnbox[player.weapon])
 	
 	-- draw the player
 	spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
@@ -205,10 +206,10 @@ function draw_gui()
    spr(135,0,0,2,2)
    
    --healthbar
-   vacumx=25
+   vacumx=23
 	 	if (player.hp!="zero") then
 				for v in all(healthbar[player.hp]) do
-  			vacumx=vacumx+9
+  			vacumx=vacumx+8
   			spr(v,vacumx,10,1,1)
 				end 	
 	 	else
@@ -220,10 +221,10 @@ function draw_gui()
 	 	spr(itembox[player.item],22,0,1,1)
 	 	
 	 	--hp
-	 	spr(153,24,9,1,1)
+	 	spr(153,22,9,1,1)
 	 	
 	 	--weaponbox
-	 	spr(wpnbox[player.weapon],17,0,1,1)
+	 	spr(wpnbox[player.weapon][1],13,0,1,2)
 	 
 end
 
