@@ -76,6 +76,7 @@ function _draw()
 	map()
 	--map(0,0,0,0,7,7)
 	print_centered(player.cooldown.attack)
+	print_centered(wpnbox[player.weapon])
 	
 	-- draw the player
 	spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
@@ -182,7 +183,25 @@ function draw_gui()
    spr(135,0,0,2,2)
    
    --healthbar
-   spr(187-((player.hp-1)*16),14,8,4,1) 
+   vacumx=23
+	 	if (player.hp!="zero") then
+				for v in all(healthbar[player.hp]) do
+  			vacumx=vacumx+8
+  			spr(v,vacumx,10,1,1)
+				end 	
+	 	else
+	 		cls(6)
+	 		print_centered('has muerto')
+	 	end
+	 	
+	 	--itembox
+	 	spr(itembox[player.item],22,0,1,1)
+	 	
+	 	--hp
+	 	spr(153,22,9,1,1)
+	 	
+	 	--weaponbox
+	 	spr(wpnbox[player.weapon][1],13,0,1,2)
 	 
 end
 
