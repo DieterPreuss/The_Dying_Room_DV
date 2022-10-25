@@ -476,8 +476,10 @@ end
 function check_damage(a, dx, dy)
 	for a2 in all(wpns) do
 			
-		if ((abs(a.x) == (a2.x)) and
-					(abs(a.y) == (a2.y)))
+		if (
+	((abs(a.x) < (a2.x+a2.w)) and	(abs(a.x) > (a2.x-a2.w)))
+	or
+	((abs(a.y) < (a2.y+a2.h)) and	(abs(a.y) > (a2.y-a2.h)))
 		then			
 				-----------------------------
 				a.hp=a.hp-a2.dmg
