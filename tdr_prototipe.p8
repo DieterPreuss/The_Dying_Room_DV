@@ -100,6 +100,14 @@ function _draw()
 	map()
 	--map(0,0,0,0,7,7)
 	print_centered(player.hp)
+	print("dx: ", 10*8, 0)
+	print(player.dx, 13*8, 0)
+	print("dy: ", 10*8, 8)
+	print(player.dy, 13*8, 8)
+	print("x: ", 10*8, 16)
+	print(player.x, 13*8, 16)
+	print("y: ", 10*8, 24)
+	print(player.y, 13*8, 24)
 	--print_centered(spear.cooldown)
 	--print_centered(wpnbox[player.weapon])
 	
@@ -385,7 +393,7 @@ function solid_actor(a, dx, dy)
 			if ((abs(x) < (a.w+a2.w)) and
 					 (abs(y) < (a.h+a2.h)))
 			then
-				if not (a.name=="aleksandr" and a2.name=="spear") then
+				if not ((a.name=="aleksandr" and a2.name=="spear") or (a.name=="dullahan" and a2.name=="sword")) then
 					if (a.dmg_cooldown==0) then
 						a.hp=a.hp-a2.dmg
 						a.dmg_cooldown=20
@@ -569,8 +577,8 @@ function spawn_boss(n)
  	y=boss1.y,
  	cooldown=0,
  	dmg=1,
- 	w=1,
-		h=4,
+ 	w=0.5,
+		h=3,
  	sprt={
  		h={186,w=4,h=1}, 		
  		vu={143,w=1,h=4},
@@ -603,51 +611,40 @@ function draw_boss(n)
 		
 		----------------------------
 		----------------------------
-		--[[
-		if not damage(boss1, boss1.dx, 0) then
-			boss1.x += boss1.dx
-		else
-			boss1.dx *= -boss1.bounce
-		end
-
-		if not damage(boss1, 0, boss1.dy) then
-			boss1.y += boss1.dy
-		else
-			boss1.dy *= -boss1.bounce
-		end
-		]]
+		boss1_ia()
 		----------------------------
 		----------------------------
 		
 		-- friction (lower for more)
-	boss1.dx *=.5
-	boss1.dy *=.5
+		boss1.dx *=.5
+		boss1.dy *=.5
 	
-	spd=sqrt(boss1.dx*boss1.dx+boss1.dy*boss1.dy)
-	boss1.f= (boss1.f+spd*2) % boss1.anims[boss1.d].fr -- 6 frames
-	if (spd < 0.05) f=0
+		spd=sqrt(boss1.dx*boss1.dx+boss1.dy*boss1.dy)
+		boss1.f= (boss1.f+spd*2) % boss1.anims[boss1.d].fr -- 6 frames
+		if (spd < 0.05) f=0
 	
-	------------cooldowns--------
-	if(boss1.cooldown.attack1!=0) boss1.cooldown.attack1=boss1.cooldown.attack1-1
-	if(boss1.dmg_cooldown!=0) boss1.dmg_cooldown=boss1.dmg_cooldown-1
-	-----------------------------
+		------------cooldowns----------
+		if(boss1.cooldown.attack1!=0) boss1.cooldown.attack1=boss1.cooldown.attack1-1
+		if(boss1.dmg_cooldown!=0) boss1.dmg_cooldown=boss1.dmg_cooldown-1
+		-------------------------------
 	
-	if (boss1.hp>0) then
-		spr(boss1.anims[boss1.d][2+(flr(boss1.f))],--*2)],      -- frame index
-	 	boss1.x*8-4,boss1.y*8-4, -- x,y (pixels)
-	 	2,2,boss1.d=="walkright"    -- w,h, flip
-		)
-	else
-		spr(192,
-	 	boss1.x*8-4,boss1.y*8-4, -- x,y (pixels)
-	 	4,4,boss1.d=="walkright"    -- w,h, flip
-		)
-	end
-			
+		--------draw sprite------------
+		if (boss1.hp>0) then
+			spr(boss1.anims[boss1.d][2+(flr(boss1.f))],--*2)],      -- frame index
+	 		boss1.x*8-4,boss1.y*8-4, -- x,y (pixels)
+	 		2,2,boss1.d=="walkright"    -- w,h, flip
+			)	
+		else
+			spr(192,
+	 		boss1.x*8-4,boss1.y*8-4, -- x,y (pixels)
+	 		4,4,boss1.d=="walkright"    -- w,h, flip
+			)
+		end
+		-------------------------------		
 	
-	------------
-	draw_weapon(1)	
-	------------
+		------------
+		draw_weapon(1)	
+		------------
 		
 	end
 end
@@ -705,6 +702,78 @@ function draw_weapon(n)
 	
 	end
 
+end
+
+function sword_attack()
+
+	for j=0,15 do
+  if (boss1.d== "walkleft") then
+  	sword.x=sword.x-(j*0.01) 
+  end
+  if (boss1.d== "walkright") then
+  	sword.x=sword.x+(j*0.01) 
+  end
+  if (boss1.d== "walkup") then
+  	sword.y=sword.y-(j*0.01) 
+  end
+  if (boss1.d== "walkdown") then
+  	sword.y=sword.y+(j*0.01) 
+  end
+  if (boss1.d== "idle") then
+  	sword.y=sword.y+(j*0.01) 
+  end
+	end
+	 
+end
+
+function boss1_ia()
+	
+	if(flr(boss1.x)!=flr(player.x))then
+			if(
+			(flr(boss1.x)<flr(player.x)) 
+			and 
+			((flr(player.x)-flr(boss1.x))>1)
+			)then										
+					boss1.dx+= ac
+					boss1.d= "walkright"					
+			elseif(
+			(flr(boss1.x)>flr(player.x)) 
+			and 
+			((flr(boss1.x)-flr(player.x))>1)
+			) then
+					boss1.dx-= ac
+					boss1.d= "walkleft"
+			else --is in the right position and distance for atack
+					if (sword.cooldown==0) then
+							sword_attack()
+							sword.cooldown=10
+					end	
+			end
+	elseif(flr(boss1.y)!=flr(player.y)) then
+			if(
+			(flr(boss1.y)<flr(player.y)) 
+			and 
+			((flr(player.y)-flr(boss1.y))>1)
+			)then
+					boss1.dy+= ac
+					boss1.d= "walkdown"
+			elseif(
+			(flr(boss1.y)>flr(player.y)) 
+			and 
+			((flr(boss1.y)-flr(player.y))>1)
+			) then
+					boss1.dy-= ac 
+					boss1.d= "walkup"
+			else
+					if (sword.cooldown==0) then
+							sword_attack()
+							sword.cooldown=10
+					end
+			end 
+	end
+	
+	if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
+	
 end
 __gfx__
 00020028820022000020002882200002000000288220022000200028822000200000002882200020000000288220000200800808a808008000880808a8080008
