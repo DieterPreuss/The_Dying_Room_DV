@@ -72,9 +72,18 @@ function _init()
  }
  
  itembox={
- 	potion=171,
- 	bomb=170,
- 	knife=144
+ 	potion={
+ 		sprt=171,
+ 		cooldown=0
+ 	},
+ 	bomb={
+ 		sprt=170,
+ 		cooldown=0
+ 	},
+ 	knife={
+ 		sprt=144,
+ 		cooldown=0
+ 	}
  }
  
  wpnbox={
@@ -154,9 +163,8 @@ function _update()
 		spear.cooldown=10
 	end
 	
-	if (btn(❎)) then
-		player.hp=player.hp+1
-		
+	if (btn(❎) and itembox[player.item].cooldown==0) then		
+		use_item(player.item)		
 	end	
 	
 	-- move (add velocity)
@@ -183,21 +191,7 @@ function _update()
 	end
 	---------------------------
 	------damage control-------
---[[	if damage(player, player.dx, 0) then
-		player.x += player.dx
-		
-	--else
-	--	player.dx *= -player.bounce
-	end
-	]]
-	-- ditto for y
 
---[[	if damage(player, 0, player.dy) then
-		player.y += player.dy
---	else
---		player.dy *= -player.bounce
-	end
-	]]
 	---------------------------
 	---------------------------
 	
@@ -208,6 +202,7 @@ function _update()
 	------------cooldowns-----------------
 	if(spear.cooldown!=0) spear.cooldown=spear.cooldown-1
 	if(player.dmg_cooldown!=0) player.dmg_cooldown=player.dmg_cooldown-1
+	if(itembox[player.item].cooldown!=0) itembox[player.item].cooldown=itembox[player.item].cooldown-1
 	-----------------------------
 	
 	-- advance animation according
@@ -254,7 +249,8 @@ function draw_gui()
 	 	end
 	 	
 	 	--itembox
-	 	spr(itembox[player.item],22,0,1,1)
+	 	spr(itembox[player.item].sprt,22,0,1,1)
+	 	if(itembox[player.item].cooldown!=0) print(itembox[player.item].cooldown, 22, 2)
 	 	
 	 	--hp
 	 	spr(153,22,8,1,1)
@@ -341,6 +337,24 @@ function spear_attack()
 	end
 	 
 end
+
+function use_item(i)
+
+	if(i=="potion") then
+			player.hp=player.hp+1
+			itembox[player.item].cooldown=60
+	elseif(i=="bomb") then
+			
+			itembox[player.item].cooldown=120
+	elseif(i=="knife") then
+			
+			itembox[player.item].cooldown=120
+	end
+	
+	 
+end
+
+
 -->8
 --collisions and damage
 
