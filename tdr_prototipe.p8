@@ -7,7 +7,6 @@ objs = {}  --a list of all the objects in the game (starts empty)
 actor = {} -- all actors
 wpns = {}  --list of weapons
 
-
 function _init()
 
 	--create player
@@ -29,13 +28,9 @@ function _init()
 		h=0.4,
   -------------
   f=0,
-  hp="four",
+  hp=4,
   item="potion",
   weapon="spear",
-  cooldown={
-  	attack=0,
-  	action=0
-  },
   anims={
 	  idle={fr=1,0},
 			walkdown={fr=5,0,2,4,0,2,4},
@@ -51,6 +46,10 @@ function _init()
  spear={
  	x=player.x,
  	y=player.y,
+ 	cooldown=0,
+ 	dmg=1,
+ 	w=1,
+		h=3,
  	sprt={
  		h={114,w=3,h=1}, 		
  		vu={66,w=1,h=3},
@@ -96,7 +95,7 @@ function _draw()
 	-- draw the whole map (128⁙32)
 	map()
 	--map(0,0,0,0,7,7)
-	print_centered(player.cooldown.attack)
+	print_centered(spear.cooldown)
 	--print_centered(wpnbox[player.weapon])
 	
 	-- draw the player
@@ -105,7 +104,7 @@ function _draw()
 	 2,2,player.d=="walkright"    -- w,h, flip
 	)
 	
-	--print_centered(player.cooldown.attack)
+	
 	draw_boss(1)
 
 	draw_spear()
@@ -136,9 +135,9 @@ function _update()
 		player.d= "walkdown"
 	end
 
-	if (btn(🅾️) and spear.x<player.x+1 and spear.y<player.y+1 and spear.x>player.x-3 and spear.y>player.y-2 and player.cooldown.attack==0) then
+	if (btn(🅾️) and spear.x<player.x+1 and spear.y<player.y+1 and spear.x>player.x-3 and spear.y>player.y-2 and spear.cooldown==0) then
 		spear_attack()
-		player.cooldown.attack=10
+		spear.cooldown=10
 	end
 	
 	if (btn(❎)) then
@@ -169,13 +168,29 @@ function _update()
 		player.dy *= -player.bounce
 	end
 	---------------------------
+	------damage control-------
+	if not damage(player, player.dx, 0) then
+		player.x += player.dx
+	--else
+	--	player.dx *= -player.bounce
+	end
+
+	-- ditto for y
+
+	if not damage(player, 0, player.dy) then
+		player.y += player.dy
+--	else
+--		player.dy *= -player.bounce
+	end
+	---------------------------
+	---------------------------
 	
 	-- friction (lower for more)
 	player.dx *=.3
 	player.dy *=.3
 	
 	-----------------------------
-	if(player.cooldown.attack!=0) player.cooldown.attack=player.cooldown.attack-1
+	if(spear.cooldown!=0) spear.cooldown=spear.cooldown-1
 	-----------------------------
 	
 	-- advance animation according
@@ -206,8 +221,13 @@ function draw_gui()
    
    --healthbar
    vacumx=23
-	 	if (player.hp!="zero") then
-				for v in all(healthbar[player.hp]) do
+   if(player.hp==4) auxhp="four"
+   if(player.hp==3) auxhp="three"
+   if(player.hp==2) auxhp="two"
+   if(player.hp==1) auxhp="one"
+   
+	 	if (player.hp!="0") then
+				for v in all(healthbar[auxhp]) do
   			vacumx=vacumx+8
   			spr(v,vacumx,8,1,1)
 				end 	
@@ -224,6 +244,7 @@ function draw_gui()
 	 	
 	 	--weaponbox
 	 	spr(wpnbox[player.weapon][1],14,0,1,2)
+	 	if(spear.cooldown!=0) print(spear.cooldown, 16, 5)
 	 
 end
 
@@ -232,7 +253,7 @@ function draw_spear()
 			--------------sprite and position---------------
 			
  		if (player.d== "walkleft") then
-				if(player.cooldown.attack==0) then
+				if(spear.cooldown==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x-2.5
  				spear.y=player.y
@@ -240,7 +261,7 @@ function draw_spear()
 				sprt=spear.sprt.h
 				switch=true
 			elseif(player.d== "walkright") then
-				if(player.cooldown.attack==0) then
+				if(spear.cooldown==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x+0.1
 					spear.y=player.y+0.5
@@ -248,7 +269,7 @@ function draw_spear()
 				sprt=spear.sprt.h
 				switch=false
 			elseif(player.d== "walkup") then
-				if(player.cooldown.attack==0) then
+				if(spear.cooldown==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x-1
  				spear.y=player.y-1.7
@@ -256,7 +277,7 @@ function draw_spear()
 				sprt=spear.sprt.vu
 				switch=false
 			elseif(player.d== "walkdown") then
-				if(player.cooldown.attack==0) then
+				if(spear.cooldown==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x+0.6
  				spear.y=player.y+0.3
@@ -264,7 +285,7 @@ function draw_spear()
 				sprt=spear.sprt.vd
 				switch=true
 			else
-				if(player.cooldown.attack==0) then
+				if(spear.cooldown==0) then
 				--if not btn(🅾️) then
 					spear.x=player.x+0.6
  				spear.y=player.y+0.3
@@ -274,7 +295,7 @@ function draw_spear()
 			end
 			-----------------------------	
 			
-			--character
+			--spear
    spr(sprt[1],
    spear.x*8+2,
    spear.y*8+1,
@@ -304,7 +325,7 @@ function spear_attack()
 	 
 end
 -->8
---collisions
+--collisions and damage
 
 -- for any given point on the
 -- map, true if there is wall
@@ -428,6 +449,59 @@ function collide_event(a1,a2)
 	
 	return false
 end
+
+
+-------------------------------
+------------damage dealing-------------------
+
+function damaging(x, y)
+	-- grab the cel value
+	val=mget(x, y)
+	
+	-- check if flag 1 is set (the
+	-- orange toggle button in the 
+	-- sprite editor)
+	return fget(val, 2)
+	
+end
+
+function damage_area(x,y,w,h)
+	return 
+		damaging(x-w,y-h) or
+		damaging(x+w,y-h) or
+		damaging(x-w,y+h) or
+		damaging(x+w,y+h)
+end
+
+function check_damage(a, dx, dy)
+	for a2 in all(wpns) do
+			
+		if ((abs(a.x) == (a2.x)) and
+					(abs(a.y) == (a2.y)))
+		then			
+				-----------------------------
+				a.hp=a.hp-a2.dmg
+				-----------------------------		
+		end
+	end
+
+end
+
+function damage_a(a, dx, dy)
+	if damage_area(a.x+dx,a.y+dy,
+				a.w,a.h) then
+				return true end
+	return check_damage(a, dx, dy) 
+end
+
+function damage(a, dx, dy)
+	if damage_area(a.x+dx,a.y+dy,a.w,a.h) then
+				check_damage(a, dx, dy)
+				return true 			
+	else
+	return false
+	end
+end
 -->8
 --bosses
 
@@ -444,7 +518,7 @@ function spawn_boss(n)
   sh=2,
   sw=2,
   --------------
-  bounce=0.5,
+  bounce=1,
   -- half-width and half-height
 		-- slightly less than 0.5 so
 		-- that will fit through 1-wide
@@ -468,8 +542,22 @@ function spawn_boss(n)
  }
  add(actor,boss1)
  
+ -------------------------
+ sword={
+ 	x=boss1.x,
+ 	y=boss1.y,
+ 	cooldown=0,
+ 	dmg=1,
+ 	w=1,
+		h=4,
+ 	sprt={
+ 		h={186,w=4,h=1}, 		
+ 		vu={143,w=1,h=4},
+ 		vd={142,w=1,h=4},
+ 	},
+ }
  
- 
+ add(wpns, sword)
  
 	end
 
@@ -492,6 +580,22 @@ function draw_boss(n)
 			boss1.dy *= -boss1.bounce
 		end
 		
+		----------------------------
+		----------------------------
+		if not damage(boss1, boss1.dx, 0) then
+			boss1.x += boss1.dx
+		else
+			boss1.dx *= -boss1.bounce
+		end
+
+		if not damage(boss1, 0, boss1.dy) then
+			boss1.y += boss1.dy
+		else
+			boss1.dy *= -boss1.bounce
+		end
+		----------------------------
+		----------------------------
+		
 		-- friction (lower for more)
 	boss1.dx *=.5
 	boss1.dy *=.5
@@ -507,10 +611,66 @@ function draw_boss(n)
 	 	boss1.x*8-4,boss1.y*8-4, -- x,y (pixels)
 	 	2,2,boss1.d=="walkright"    -- w,h, flip
 		)	
+	
+	------------
+	draw_weapon(1)	
+	------------
+		
 	end
 end
 
+function draw_weapon(n)
 
+	if (n==1) then
+	
+		if (boss1.d== "walkleft") then
+				if(sword.cooldown==0) then
+				--if not btn(🅾️) then
+					sword.x=boss1.x-2.5
+ 				sword.y=boss1.y
+ 			end
+				sprt=sword.sprt.h
+				switch=true
+			elseif(boss1.d== "walkright") then
+				if(sword.cooldown==0) then
+					sword.x=boss1.x+0.1
+					sword.y=boss1.y+0.5
+				end
+				sprt=sword.sprt.h
+				switch=false
+			elseif(boss1.d== "walkup") then
+				if(sword.cooldown==0) then
+					sword.x=boss1.x-1
+ 				sword.y=boss1.y-1.7
+ 			end
+				sprt=sword.sprt.vu
+				switch=false
+			elseif(boss1.d== "walkdown") then
+				if(sword.cooldown==0) then
+					sword.x=boss1.x+0.6
+ 				sword.y=boss1.y+0.3
+ 			end
+				sprt=sword.sprt.vd
+				switch=true
+			else
+				if(sword.cooldown==0) then
+					sword.x=boss1.x+0.6
+ 				sword.y=boss1.y+0.3
+ 			end
+				sprt=sword.sprt.vd
+				switch=true
+			end
+			-----------------------------	
+			
+			--character
+   spr(sprt[1],
+   sword.x*8+2,
+   sword.y*8+1,
+   sprt.w,sprt.h,switch)
+	
+	end
+
+end
 __gfx__
 00020028820022000020002882200002000000288220022000200028822000200000002882200020000000288220000200800808a808008000880808a8080008
 0002029888a202000200029888920020000002988892020000020029888202000000002988820200000000298882002008808a8a9a8a808800088a8a9a8a8088
@@ -641,8 +801,8 @@ __gfx__
 050055255ff5fffff5fff5ffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 066505550fff5ffffffffff00f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000020000000000000000000000
-0000020200000000000000000000000000020202000202000000000000000000020200000000000202000000000000000000000000000002020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000040000000000000000000000
+0000020200000000000000000000000400020202000202000000000000000004020200000000000202000000000004000000000000000002020000000404040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 a58182a7a7a7a7a0a1a7a7a7a78586a600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 a89192808080808080808080809596b800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
