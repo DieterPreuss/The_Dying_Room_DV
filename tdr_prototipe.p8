@@ -31,6 +31,7 @@ function _init()
   f=0,
   hp=4,
   dmg=0,
+  dmg_cooldown=0,
   item="potion",
   weapon="spear",
   anims={
@@ -51,8 +52,8 @@ function _init()
  	y=player.y,
  	cooldown=0,
  	dmg=1,
- 	w=1,
-		h=3,
+ 	w=0.4,
+		h=0.4,
  	sprt={
  		h={114,w=3,h=1}, 		
  		vu={66,w=1,h=3},
@@ -98,15 +99,17 @@ function _draw()
 	-- draw the whole map (128⁙32)
 	map()
 	--map(0,0,0,0,7,7)
-	print_centered(spear.cooldown)
+	print_centered(player.hp)
+	--print_centered(spear.cooldown)
 	--print_centered(wpnbox[player.weapon])
 	
 	-- draw the player
-	spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
-	 player.x*8-4,player.y*8-4, -- x,y (pixels)
-	 2,2,player.d=="walkright"    -- w,h, flip
-	)
-	
+	if (player.hp!="0") then	
+		spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
+	 	player.x*8-4,player.y*8-4, -- x,y (pixels)
+	 	2,2,player.d=="walkright"    -- w,h, flip
+		)
+	end
 	
 	draw_boss(1)
 
@@ -144,7 +147,7 @@ function _update()
 	end
 	
 	if (btn(❎)) then
-		player.hp="two"
+		player.hp=player.hp+1
 		
 	end	
 	
@@ -194,8 +197,9 @@ function _update()
 	player.dx *=.3
 	player.dy *=.3
 	
-	-----------------------------
+	------------cooldowns-----------------
 	if(spear.cooldown!=0) spear.cooldown=spear.cooldown-1
+	if(player.dmg_cooldown!=0) player.dmg_cooldown=player.dmg_cooldown-1
 	-----------------------------
 	
 	-- advance animation according
@@ -382,7 +386,10 @@ function solid_actor(a, dx, dy)
 					 (abs(y) < (a.h+a2.h)))
 			then
 				if not (a.name=="aleksandr" and a2.name=="spear") then
-					a.hp=a.hp-a2.dmg
+					if (a.dmg_cooldown==0) then
+						a.hp=a.hp-a2.dmg
+						a.dmg_cooldown=20
+					end	
 				end
 				-- moving together?
 				-- this allows actors to
@@ -392,7 +399,7 @@ function solid_actor(a, dx, dy)
 				-- process each axis separately
 				
 				-- along x
-				if not (a.name=="aleksandr" and a2.name=="spear") then
+				if not ((a.name=="aleksandr" and a2.name=="spear") or a2.name=="sword") then
 				if (dx != 0 and abs(x) <
 				    abs(a.x-a2.x))
 				then
@@ -534,12 +541,13 @@ function spawn_boss(n)
 		-- slightly less than 0.5 so
 		-- that will fit through 1-wide
 		-- holes.
-		w=0.4,
-		h=0.4,
+		w=0.2,
+		h=0.2,
   -------------
   f=0,
   hp=8,
   dmg=0.5,
+  dmg_cooldown=0,
   cooldown={
   	attack1=0,
   	attack2=0
@@ -619,13 +627,23 @@ function draw_boss(n)
 	boss1.f= (boss1.f+spd*2) % boss1.anims[boss1.d].fr -- 6 frames
 	if (spd < 0.05) f=0
 	
-	-----------------------------
+	------------cooldowns--------
 	if(boss1.cooldown.attack1!=0) boss1.cooldown.attack1=boss1.cooldown.attack1-1
+	if(boss1.dmg_cooldown!=0) boss1.dmg_cooldown=boss1.dmg_cooldown-1
+	-----------------------------
 	
+	if (boss1.hp>0) then
 		spr(boss1.anims[boss1.d][2+(flr(boss1.f))],--*2)],      -- frame index
 	 	boss1.x*8-4,boss1.y*8-4, -- x,y (pixels)
 	 	2,2,boss1.d=="walkright"    -- w,h, flip
-		)	
+		)
+	else
+		spr(192,
+	 	boss1.x*8-4,boss1.y*8-4, -- x,y (pixels)
+	 	4,4,boss1.d=="walkright"    -- w,h, flip
+		)
+	end
+			
 	
 	------------
 	draw_weapon(1)	
@@ -677,11 +695,13 @@ function draw_weapon(n)
 			end
 			-----------------------------	
 			
-			--character
-   spr(sprt[1],
-   sword.x*8+2,
-   sword.y*8+1,
-   sprt.w,sprt.h,switch)
+			--draw sword
+			if(boss1.hp>0) then
+   	spr(sprt[1],
+   	sword.x*8+2,
+   	sword.y*8+1,
+   	sprt.w,sprt.h,switch)
+   end
 	
 	end
 
