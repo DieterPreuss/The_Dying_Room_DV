@@ -11,6 +11,7 @@ function _init()
 
 	--create player
 	player={
+		name="aleksandr",
 	 x=7,
 	 y=10,
 	 dx=0,
@@ -29,6 +30,7 @@ function _init()
   -------------
   f=0,
   hp=4,
+  dmg=0,
   item="potion",
   weapon="spear",
   anims={
@@ -44,6 +46,7 @@ function _init()
  --create spear
 
  spear={
+ 	name="spear",
  	x=player.x,
  	y=player.y,
  	cooldown=0,
@@ -57,7 +60,7 @@ function _init()
  	},
  }
  
- add(wpns, spear)
+ add(actor, spear)
  
  healthbar={
  	four={185,140,169},
@@ -169,19 +172,21 @@ function _update()
 	end
 	---------------------------
 	------damage control-------
-	if not damage(player, player.dx, 0) then
+--[[	if damage(player, player.dx, 0) then
 		player.x += player.dx
+		
 	--else
 	--	player.dx *= -player.bounce
 	end
-
+	]]
 	-- ditto for y
 
-	if not damage(player, 0, player.dy) then
+--[[	if damage(player, 0, player.dy) then
 		player.y += player.dy
 --	else
 --		player.dy *= -player.bounce
 	end
+	]]
 	---------------------------
 	---------------------------
 	
@@ -376,7 +381,9 @@ function solid_actor(a, dx, dy)
 			if ((abs(x) < (a.w+a2.w)) and
 					 (abs(y) < (a.h+a2.h)))
 			then
-				
+				if not (a.name=="aleksandr" and a2.name=="spear") then
+					a.hp=a.hp-a2.dmg
+				end
 				-- moving together?
 				-- this allows actors to
 				-- overlap initially 
@@ -385,11 +392,10 @@ function solid_actor(a, dx, dy)
 				-- process each axis separately
 				
 				-- along x
-				
+				if not (a.name=="aleksandr" and a2.name=="spear") then
 				if (dx != 0 and abs(x) <
 				    abs(a.x-a2.x))
 				then
-					
 					v=abs(a.dx)>abs(a2.dx) and 
 					  a.dx or a2.dx
 					a.dx,a2.dx = v,v
@@ -399,7 +405,7 @@ function solid_actor(a, dx, dy)
 					 collide_event(a2,a)
 					return not ca
 				end
-				
+			
 				-- along y
 				
 				if (dy != 0 and abs(y) <
@@ -416,6 +422,7 @@ function solid_actor(a, dx, dy)
 				
 			end
 		end
+	end
 	end
 	
 	return false
@@ -454,7 +461,7 @@ end
 -------------------------------
 ------------damage dealing-------------------
 
-function damaging(x, y)
+--[[function damaging(x, y)
 	-- grab the cel value
 	val=mget(x, y)
 	
@@ -477,9 +484,9 @@ function check_damage(a, dx, dy)
 	for a2 in all(wpns) do
 			
 		if (
-	((abs(a.x) < (a2.x+a2.w)) and	(abs(a.x) > (a2.x-a2.w)))
-	or
-	((abs(a.y) < (a2.y+a2.h)) and	(abs(a.y) > (a2.y-a2.h)))
+			((abs(a.x) < (a2.x+a2.w)) and	(abs(a.x) > (a2.x-a2.w)))
+			and
+			((abs(a.y) < (a2.y+a2.h)) and	(abs(a.y) > (a2.y-a2.h))))
 		then			
 				-----------------------------
 				a.hp=a.hp-a2.dmg
@@ -504,6 +511,7 @@ function damage(a, dx, dy)
 	return false
 	end
 end
+]]
 -->8
 --bosses
 
@@ -512,6 +520,7 @@ function spawn_boss(n)
 	if (n==1) then
 		--create boss 1
 	boss1={
+		name="dullahan",
 	 x=7,
 	 y=2,
 	 dx=0,
@@ -530,6 +539,7 @@ function spawn_boss(n)
   -------------
   f=0,
   hp=8,
+  dmg=0.5,
   cooldown={
   	attack1=0,
   	attack2=0
@@ -546,6 +556,7 @@ function spawn_boss(n)
  
  -------------------------
  sword={
+ 	name="sword",
  	x=boss1.x,
  	y=boss1.y,
  	cooldown=0,
@@ -559,7 +570,7 @@ function spawn_boss(n)
  	},
  }
  
- add(wpns, sword)
+ add(actor, sword)
  
 	end
 
@@ -584,6 +595,7 @@ function draw_boss(n)
 		
 		----------------------------
 		----------------------------
+		--[[
 		if not damage(boss1, boss1.dx, 0) then
 			boss1.x += boss1.dx
 		else
@@ -595,6 +607,7 @@ function draw_boss(n)
 		else
 			boss1.dy *= -boss1.bounce
 		end
+		]]
 		----------------------------
 		----------------------------
 		
@@ -804,7 +817,7 @@ __gfx__
 066505550fff5ffffffffff00f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000040000000000000000000000
-0000020200000000000000000000000400020202000202000000000000000004020200000000000202000000000004000000000000000002020000000404040000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000020200000000000000000000000400020202000202000000000000000004020200000000000202000000000006000000000000000002020000000404060000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 a58182a7a7a7a7a0a1a7a7a7a78586a600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 a89192808080808080808080809596b800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
