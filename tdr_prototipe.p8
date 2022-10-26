@@ -3,9 +3,17 @@ version 38
 __lua__
 --the dying room
 
-objs = {}  --a list of all the objects in the game (starts empty)
-actor = {} -- all actors
-wpns = {}  --list of weapons
+objs = {}  	-- a list of all the objects in the game (starts empty)
+actor = {} 	-- all actors
+wpns = {}  	-- list of weapons
+wind = {}   -- list of text windows
+scene=false -- keeps track of scenes playing at the moment
+boss={ 					-- keeps track of the boss on screen
+	number=1,
+	alive=false
+}
+dirx={-1,1,0,0,1,1,-1,-1}
+diry={0,0,-1,1,-1,1,1,-1} 
 
 function _init()
 
@@ -20,7 +28,7 @@ function _init()
   sh=2,
   sw=2,
   --------------
-  bounce=0.3,
+  bounce=1,
   -- half-width and half-height
 		-- slightly less than 0.5 so
 		-- that will fit through 1-wide
@@ -92,8 +100,14 @@ function _init()
  } 
  
  --create boss
+ if (boss.alive==false and scene==false) then
+ 	spawn_boss(boss.number)
+ 	boss.alive=true
+ 	boss.number=boss.number+1 
+ end
  
- spawn_boss(1) 
+ --addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
+	--showmsg({"this is the 1st message", "", "this is the 2nd message"})
 	
 end
 
@@ -129,10 +143,12 @@ function _draw()
 	end
 	
 	draw_boss(1)
-
-	draw_spear()
+	
+	draw_weapon()
 	
 	draw_gui()  
+	
+	drawind()
 	
 end
 
@@ -261,58 +277,55 @@ function draw_gui()
 	 
 end
 
-function draw_spear()
+function draw_weapon()
 			
-			--------------sprite and position---------------
+			----sprite and position--------
+			if (player.weapon=="spear") then
 			
- 		if (player.d== "walkleft") then
-				if(spear.cooldown==0) then
-				--if not btn(🅾️) then
-					spear.x=player.x-2.5
- 				spear.y=player.y
- 			end
-				sprt=spear.sprt.h
-				switch=true
-			elseif(player.d== "walkright") then
-				if(spear.cooldown==0) then
-				--if not btn(🅾️) then
-					spear.x=player.x+0.1
-					spear.y=player.y+0.5
+ 			if (player.d== "walkleft") then
+					if(spear.cooldown==0) then
+						spear.x=player.x-2.5
+ 					spear.y=player.y
+ 				end
+					sprt=spear.sprt.h
+					switch=true
+				elseif(player.d== "walkright") then
+					if(spear.cooldown==0) then
+						spear.x=player.x+0.1
+						spear.y=player.y+0.5
+					end
+					sprt=spear.sprt.h
+					switch=false
+				elseif(player.d== "walkup") then
+					if(spear.cooldown==0) then
+						spear.x=player.x-1
+ 					spear.y=player.y-1.7
+ 				end
+					sprt=spear.sprt.vu
+					switch=false
+				elseif(player.d== "walkdown") then
+					if(spear.cooldown==0) then
+						spear.x=player.x+0.6
+ 					spear.y=player.y+0.3
+ 				end
+					sprt=spear.sprt.vd
+					switch=true
+				else
+					if(spear.cooldown==0) then
+						spear.x=player.x+0.6
+ 					spear.y=player.y+0.3
+ 				end
+					sprt=spear.sprt.vd
+					switch=true
 				end
-				sprt=spear.sprt.h
-				switch=false
-			elseif(player.d== "walkup") then
-				if(spear.cooldown==0) then
-				--if not btn(🅾️) then
-					spear.x=player.x-1
- 				spear.y=player.y-1.7
- 			end
-				sprt=spear.sprt.vu
-				switch=false
-			elseif(player.d== "walkdown") then
-				if(spear.cooldown==0) then
-				--if not btn(🅾️) then
-					spear.x=player.x+0.6
- 				spear.y=player.y+0.3
- 			end
-				sprt=spear.sprt.vd
-				switch=true
-			else
-				if(spear.cooldown==0) then
-				--if not btn(🅾️) then
-					spear.x=player.x+0.6
- 				spear.y=player.y+0.3
- 			end
-				sprt=spear.sprt.vd
-				switch=true
-			end
-			-----------------------------	
+				-----------------------------	
 			
-			--spear
-   spr(sprt[1],
-   spear.x*8+2,
-   spear.y*8+1,
-   sprt.w,sprt.h,switch)
+				--spear
+   	spr(sprt[1],
+   	spear.x*8+2,
+   	spear.y*8+1,
+   	sprt.w,sprt.h,switch)
+   end
 	 
 end
 
@@ -558,7 +571,7 @@ function spawn_boss(n)
   sh=2,
   sw=2,
   --------------
-  bounce=1,
+  bounce=2,
   -- half-width and half-height
 		-- slightly less than 0.5 so
 		-- that will fit through 1-wide
@@ -657,13 +670,13 @@ function draw_boss(n)
 		-------------------------------		
 	
 		------------
-		draw_weapon(1)	
+		draw_boss_weapon(1)	
 		------------
 		
 	end
 end
 
-function draw_weapon(n)
+function draw_boss_weapon(n)
 
 	if (n==1) then
 	
@@ -788,6 +801,92 @@ function boss1_ia()
 	
 	if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
 	
+end
+-->8
+--scenes
+
+function addwind(_x, _y, _w, _h, _txt)
+
+	local w={
+	x=_x, 
+	y=_y, 
+	w=_w, 
+	h=_h, 
+	txt=_txt
+	}
+	
+	add(wind, w)
+	return w
+
+end
+
+function rectfill2(_x,_y,_w,_h,_c)
+ 
+ rectfill(_x,_y,_x+_w-1,_y+_h-1,_c)
+
+end
+
+function oprint8(_t,_x,_y,_c,_c2)
+ for i=1,8 do
+  print(_t,_x+dirx[i],_y+diry[i],_c2)
+ end 
+ print(_t,_x,_y,_c)
+end
+
+function drawind()
+
+	for w in all(wind) do
+	
+		local wx, wy, ww, wh= w.x, w.y, w.w, w.h
+		rectfill2(wx, wy, ww, wh, 0)
+		rectfill2(wx+1, wy+1, ww-2, wh-2, 6)
+		rectfill2(wx+2, wy+2, ww-4, wh-4, 1)
+		
+		wx+=4
+		wy+=4
+		clip(wx, wy, ww-8, wh-8)
+		
+		for i=1,#w.txt do
+			
+			local txt=w.txt[i]
+			print(txt, wx, wy, 6)
+			wy+=6
+		
+		end
+		
+		clip()
+ 
+  if w.dur!=nil then
+   w.dur-=1
+   if w.dur<=0 then
+    local dif=w.h/4
+    w.y+=dif/2
+    w.h-=dif
+    if w.h<3 then
+     del(wind,w)
+    end
+   end
+  else
+   if w.butt then
+    oprint8("❎",wx+ww-15,wy-1+sin(time()),6,0)
+   end
+  end
+ end
+end
+
+function showmsg(txt,dur)
+
+ local wid=(#txt+2)*4+7 --50
+ local w=addwind(63-wid/2,50,wid,13,{" "..txt})
+ w.dur=dur
+ 
+end
+ 
+function showmsg(txt)
+
+ talkwind=addwind(16,50,96,#txt*6+7,txt)
+ talkwind.butt=true
+ 
 end
 __gfx__
 00020028820022000020002882200002000000288220022000200028822000200000002882200020000000288220000200800808a808008000880808a8080008
@@ -919,8 +1018,8 @@ __gfx__
 050055255ff5fffff5fff5ffff000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 066505550fff5ffffffffff00f000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __gff__
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000000000000000000000000000000000000400000000000000000000000000000000040000000000000000000000
-0000020200000000000000000000000400020202000202000000000000000004020200000000000202000000000006000000000000000002020000000404060000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000020000000000000000000000
+0000020200000000000000000000000200020202000202000000000000000006020200000000000202000000000002000000000000000002020000000202020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 a58182a7a7a7a7a0a1a7a7a7a78586a600000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 a89192808080808080808080809596b800000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
