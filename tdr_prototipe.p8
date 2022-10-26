@@ -7,7 +7,7 @@ objs = {}  	-- a list of all the objects in the game (starts empty)
 actor = {} 	-- all actors
 wpns = {}  	-- list of weapons
 wind = {}   -- list of text windows
-scene=false -- keeps track of scenes playing at the moment
+scene=true -- keeps track of scenes playing at the moment
 boss={ 					-- keeps track of the boss on screen
 	number=1,
 	alive=false
@@ -112,6 +112,8 @@ function _init()
 end
 
 function _draw()
+ 
+ if (scene==false) then
  cls()
 	
 	-- move camera to current room
@@ -150,9 +152,16 @@ function _draw()
 	
 	drawind()
 	
+	end
+	----prueba de escenas-------
+	map(52, 0, 0, 0, 15, 15,)
+	----------------------------
+	
 end
 
 function _update()
+
+ if(scene==false) then
     
  ac=0.1 -- acceleration
  
@@ -233,8 +242,9 @@ function _update()
 		mset(player.x,player.y,14)
 		sfx(0)
 	end
-    
-    
+	
+	end
+        
 end
 
 function print_centered(str)
@@ -363,8 +373,7 @@ function use_item(i)
 			
 			itembox[player.item].cooldown=120
 	end
-	
-	 
+		 
 end
 
 
