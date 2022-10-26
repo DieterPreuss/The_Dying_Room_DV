@@ -37,11 +37,12 @@ function _init()
 		h=0.4,
   -------------
   f=0,
-  hp=4,
+  hp=500, --8
   dmg=0,
   dmg_cooldown=0,
   item="potion",
   weapon="spear",
+  blood_color=8,
   anims={
 	  idle={fr=1,0},
 			walkdown={fr=5,0,2,4,0,2,4},
@@ -72,16 +73,16 @@ function _init()
  add(actor, spear)
  
  healthbar={
- 	ten={185,140,169},
-  nine={},
- 	eight={},
- 	seven={},
- 	six={},
- 	five={},
- 	four={},
- 	three={185,140,141},
- 	two={185,139,141},
- 	one={155,132,141},
+ 	--ten={},
+  --nine={},
+ 	eight={185,140,169, 169},
+ 	seven={185,140,169,141},
+ 	six={185,140,141,141},
+ 	five={185,141,141,141},
+ 	four={155,132,141,141},
+ 	three={155,132,141},
+ 	two={155,132},
+ 	one={132},
  	zero={0}
  }
  
@@ -103,7 +104,9 @@ function _init()
  wpnbox={
  	spear={156, w=1, h=2},
  	sword={157, w=1, h=2}
- } 
+ }
+ 
+  
  
  --create boss
  if (boss.alive==false and scene==false) then
@@ -111,6 +114,11 @@ function _init()
  	boss.alive=true
  	boss.number=boss.number+1 
  end
+ 
+ hptrack={
+ 		player=player.hp,
+ 		boss=boss1.hp
+ }
  
  --addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
 	--showmsg({"this is the 1st message", "", "this is the 2nd message"})
@@ -157,6 +165,11 @@ function _draw()
 	draw_gui()  
 	
 	drawind()
+	
+	if (hptrack.player!=player.hp) then
+			draw_blood(player)
+			hptrack.player=hptrack.player-1
+	end
 	
 	end
 	----prueba de escenas-------
@@ -260,37 +273,44 @@ end
 
 function draw_gui()
 			
-			
-			--character
-   spr(135,0,0,2,2)
+			if (player.hp>0) then
+					--character
+   		spr(135,0,0,2,2)
    
-   --healthbar
-   vacumx=23
-   if(player.hp==4) auxhp="four"
-   if(player.hp==3) auxhp="three"
-   if(player.hp==2) auxhp="two"
-   if(player.hp==1) auxhp="one"
+   		--healthbar
+   		vacumx=23
+   		if(player.hp==8) auxhp="eight"
+   		if(player.hp==7) auxhp="seven"
+   		if(player.hp==6) auxhp="six"
+   		if(player.hp==5) auxhp="five"
+   		if(player.hp==4) auxhp="four"
+   		if(player.hp==3) auxhp="three"
+   		if(player.hp==2) auxhp="two"
+   		if(player.hp==1) auxhp="one"
    
-	 	if (player.hp!="0") then
-				for v in all(healthbar[auxhp]) do
-  			vacumx=vacumx+8
-  			spr(v,vacumx,8,1,1)
-				end 	
+	 	
+					for v in all(healthbar[auxhp]) do
+  					vacumx=vacumx+8
+  					spr(v,vacumx,8,1,1)
+					end
+					
+					--itembox
+	 			spr(itembox[player.item].sprt,22,0,1,1)
+	 			if(itembox[player.item].cooldown!=0) print(itembox[player.item].cooldown, 22, 2)
+	 	
+	 			--hp
+	 			spr(153,22,8,1,1)
+	 	
+	 			--weaponbox
+	 			spr(wpnbox[player.weapon][1],14,0,1,2)
+	 			if(spear.cooldown!=0) print(spear.cooldown, 16, 5)
+					 	
 	 	else
+	 	
 	 		cls(6)
 	 		print_centered('has muerto')
-	 	end
-	 	
-	 	--itembox
-	 	spr(itembox[player.item].sprt,22,0,1,1)
-	 	if(itembox[player.item].cooldown!=0) print(itembox[player.item].cooldown, 22, 2)
-	 	
-	 	--hp
-	 	spr(153,22,8,1,1)
-	 	
-	 	--weaponbox
-	 	spr(wpnbox[player.weapon][1],14,0,1,2)
-	 	if(spear.cooldown!=0) print(spear.cooldown, 16, 5)
+	 		
+	 	end 	
 	 
 end
 
@@ -387,6 +407,25 @@ end
 -->8
 --collisions and damage
 
+function draw_blood(a)
+
+--[[	for y=0,127 do
+  for x=0,127 do
+    pset(x, y, x*y/8)
+  end
+	end]]
+	--flr(rnd(6)) + 1
+	--pset(a.x+flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, a.blood_color)
+	--pset(a.x-flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, a.blood_color)
+	--pset(a.x+flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, a.blood_color)
+	--pset(a.x-flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, a.blood_color)
+	rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
+	rectfill2(a.x-flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, 1, 1, 8)
+	rectfill2(a.x+flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, 1, 1, 8)
+	rectfill2(a.x-flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, 1, 1, 8)
+
+end
+
 -- for any given point on the
 -- map, true if there is wall
 -- there.
@@ -439,7 +478,7 @@ function solid_actor(a, dx, dy)
 				if not ((a.name=="aleksandr" and a2.name=="spear") or (a.name=="dullahan" and a2.name=="sword")) then
 					if (a.dmg_cooldown==0) then
 						a.hp=a.hp-a2.dmg
-						a.dmg_cooldown=20
+						a.dmg_cooldown=20						
 					end	
 				end
 				-- moving together?
@@ -603,6 +642,7 @@ function spawn_boss(n)
   	attack1=0,
   	attack2=0
   },
+  blood_color=8,
   anims={
 	  idle={fr=1,12,12,12,12,12},
 			walkdown={fr=5,12,14,64,12,14,64},
@@ -659,8 +699,8 @@ function draw_boss(n)
 		----------------------------
 		
 		-- friction (lower for more)
-		boss1.dx *=.5
-		boss1.dy *=.5
+		boss1.dx *=.3
+		boss1.dy *=.3
 	
 		spd=sqrt(boss1.dx*boss1.dx+boss1.dy*boss1.dy)
 		boss1.f= (boss1.f+spd*2) % boss1.anims[boss1.d].fr -- 6 frames
@@ -689,6 +729,16 @@ function draw_boss(n)
 		draw_boss_weapon(1)	
 		------------
 		
+		---------draw healthbar-------
+		if (boss1.hp>0) then
+				--health
+				rectfill2(5*8, 14*8, boss1.hp*8, 2, 8)
+				--name
+				rectfill2(7*8-4, 15*8, 6*8-4, 6, 2)
+				print("dark knight", 7*8-4, 15*8, 8)
+		end
+		------------------------------
+	
 	end
 end
 
