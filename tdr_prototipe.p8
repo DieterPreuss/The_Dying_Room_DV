@@ -72,7 +72,13 @@ function _init()
  add(actor, spear)
  
  healthbar={
- 	four={185,140,169},
+ 	ten={185,140,169},
+  nine={},
+ 	eight={},
+ 	seven={},
+ 	six={},
+ 	five={},
+ 	four={},
  	three={185,140,141},
  	two={185,139,141},
  	one={155,132,141},
