@@ -7,11 +7,18 @@ objs = {}  	-- a list of all the objects in the game (starts empty)
 actor = {} 	-- all actors
 wpns = {}  	-- list of weapons
 wind = {}   -- list of text windows
-scene=true -- keeps track of scenes playing at the moment
-boss={ 					-- keeps track of the boss on screen
+
+scene= {
 	number=1,
+	running=false,
+	timer=50000
+} -- keeps track of scenes playing at the moment
+
+boss={ 					-- keeps track of the boss on screen
+	number=0,
 	alive=false
 }
+
 dirx={-1,1,0,0,1,1,-1,-1}
 diry={0,0,-1,1,-1,1,1,-1} 
 
@@ -37,7 +44,7 @@ function _init()
 		h=0.4,
   -------------
   f=0,
-  hp=500, --8
+  hp=8, --8
   dmg=0,
   dmg_cooldown=0,
   item="potion",
@@ -106,20 +113,19 @@ function _init()
  	sword={157, w=1, h=2}
  }
  
-  
- 
  --create boss
- if (boss.alive==false and scene==false) then
+ if (boss.alive==false and scene.running==false) then
+ 	boss.number=boss.number+1
  	spawn_boss(boss.number)
- 	boss.alive=true
- 	boss.number=boss.number+1 
+ 	boss.alive=true 	 
  end
  
  hptrack={
- 		player=player.hp,
- 		boss=boss1.hp
+ 		player=8,
+ 		boss=10
  }
  
+ --draw_scene(scene.number)
  --addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
 	--showmsg({"this is the 1st message", "", "this is the 2nd message"})
 	
@@ -127,185 +133,137 @@ end
 
 function _draw()
  
- if (scene==false) then
- cls()
+ if (scene.running==false) then
+ 		cls()
 	
-	-- move camera to current room
-	room_x = flr(player.x/16)
-	room_y = flr(player.y/16)
-	camera(room_x*128,room_y*128)
+			-- move camera to current room
+			room_x = flr(player.x/16)
+			room_y = flr(player.y/16)
+			camera(room_x*128,room_y*128)
 	
-	-- draw the whole map (128⁙32)
-	map()
-	--map(0,0,0,0,7,7)
-	print_centered(player.hp)
-	print("dx: ", 10*8, 0)
-	print(player.dx, 13*8, 0)
-	print("dy: ", 10*8, 8)
-	print(player.dy, 13*8, 8)
-	print("x: ", 10*8, 16)
-	print(player.x, 13*8, 16)
-	print("y: ", 10*8, 24)
-	print(player.y, 13*8, 24)
-	--print_centered(spear.cooldown)
-	--print_centered(wpnbox[player.weapon])
+			-- draw the whole map (128⁙32)
+			map()
+			
+			--print data
+			--[[
+			print_centered(player.hp)
+			print("dx: ", 10*8, 0)
+			print(player.dx, 13*8, 0)
+			print("dy: ", 10*8, 8)
+			print(player.dy, 13*8, 8)
+			print("x: ", 10*8, 16)
+			print(player.x, 13*8, 16)
+			print("y: ", 10*8, 24)
+			print(player.y, 13*8, 24)
+			]]
 	
-	-- draw the player
-	if (player.hp!="0") then	
-		spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
-	 	player.x*8-4,player.y*8-4, -- x,y (pixels)
-	 	2,2,player.d=="walkright"    -- w,h, flip
-		)
+			-- draw the player
+			if (player.hp!=0) then	
+				spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
+	 			player.x*8-4,player.y*8-4, -- x,y (pixels)
+	 			2,2,player.d=="walkright"    -- w,h, flip
+				)
+			end
+						
+			draw_boss(boss.number)
+	
+			draw_weapon()
+	
+			draw_gui()  
+	
+			--drawind()
+	
+			if (hptrack.player!=player.hp and player.hp>0) then
+					draw_blood(player)
+					hptrack.player=hptrack.player-1
+			end
+			
+	else
+			drawind()		
+			draw_scene(scene.number)
 	end
-	
-	draw_boss(1)
-	
-	draw_weapon()
-	
-	draw_gui()  
-	
-	drawind()
-	
-	if (hptrack.player!=player.hp) then
-			draw_blood(player)
-			hptrack.player=hptrack.player-1
-	end
-	
-	end
-	----prueba de escenas-------
-	--[[
-		cls()
-		map(52, 0, 0, 0, 16, 16)
-		addwind(0*8, 0*8, 48, 20, {"linea1", "linea2"})
-	]]
-	--escena derrota caballero--
-	--[[
-		cls()
-		map(32, 0, 0, 0, 16, 16)
-		--dark knight--
- 	sspr( 0, 96, 32, 32, 65, 2, 60, 60 )
- 	--spear--------
- 	sspr( 32, 96, 32, 16, 45, 70, 60, 60,true)
-	]]
-	--escena despertar segunda fase-
-		cls()
-		map(72, 0, 0, 0, 16, 16)
-		--first panel--
-			--sword---
-				sspr( 80, 88, 16, 8, 10, 40, 25, 15 )
-				sspr( 96, 112, 8, 8, 35, 40, 15, 15 )
-			--helmet--		
-				sspr( 80, 96, 16, 16, 8, 6, 40, 40,true )
-			--tears---
-				sspr( 96, 120, 8, 8, 10, 15, 10, 5)
-				sspr( 96, 120, 8, 8, 40, 35, 10, 5)
-				sspr( 96, 120, 8, 8, 8, 59, 48, 5)
-		----------------
-		--second panel--
-			--body--
-				sspr( 80, 112, 16, 16, 62, 2, 60, 60)
-			--sword edges--
-				--sspr( 48, 96, 8, 8, 58, 50, 15, 15)
-				sspr( 56, 96, 8, 8, 115, 40, 15, 15)
-				sspr( 56, 104, 8, 8, 58, 45, 15, 15)
-				sspr( 56, 112, 8, 8, 74, 52, 15, 15)
-		----------------
-		--third panel--
-			--face----------
-				sspr( 64, 96, 16, 16, 40, 74, 45, 45)
-			--sword edges---
-				sspr( 48, 96, 8, 8, 20, 74, 15, 15)
-				sspr( 56, 96, 8, 8, 95, 74, 15, 15)
-				sspr( 56, 104, 8, 8, 10, 94, 15, 15)
-				sspr( 56, 112, 8, 8, 100, 104, 15, 15)
-		----------------
-	----------------------------
 	
 end
 
 function _update()
 
- if(scene==false) then
+ if(scene.running==false) then
     
- ac=0.1 -- acceleration
+ 		ac=0.1 -- acceleration
  
 	
-	if (btn(⬅️)) then
-		player.dx-= ac 
-		player.d= "walkleft"
-	end
-	if (btn(➡️)) then
-		player.dx+= ac 
-		player.d= "walkright"
-	end
-	if (btn(⬆️)) then
-		player.dy-= ac 
-		player.d= "walkup"
-	end	
-	if (btn(⬇️)) then
-		player.dy+= ac 
-		player.d= "walkdown"
-	end
+			if (btn(⬅️)) then
+				player.dx-= ac 
+				player.d= "walkleft"
+			end
+			if (btn(➡️)) then
+				player.dx+= ac 
+				player.d= "walkright"
+			end
+			if (btn(⬆️)) then
+				player.dy-= ac 
+				player.d= "walkup"
+			end	
+			if (btn(⬇️)) then
+				player.dy+= ac 
+				player.d= "walkdown"
+			end
 
-	if (btn(🅾️) and spear.x<player.x+1 and spear.y<player.y+1 and spear.x>player.x-3 and spear.y>player.y-2 and spear.cooldown==0) then
-		spear_attack()
-		spear.cooldown=10
-	end
+			if (btn(🅾️) and spear.x<player.x+1 and spear.y<player.y+1 and spear.x>player.x-3 and spear.y>player.y-2 and spear.cooldown==0) then
+				spear_attack()
+				spear.cooldown=10
+			end
 	
-	if (btn(❎) and itembox[player.item].cooldown==0) then		
-		use_item(player.item)		
-	end	
+			if (btn(❎) and itembox[player.item].cooldown==0) then		
+				use_item(player.item)		
+			end	
 	
-	-- move (add velocity)
-	----------viejo-------------
-	--player.x+=player.dx player.y+=player.dy
-	---------------------------
-	----------nuevo-----------------
-	-- only move actor along x
-	-- if the resulting position
-	-- will not overlap with a wall
+			-- only move actor along x
+			-- if the resulting position
+			-- will not overlap with a wall
 
-	if not solid_a(player, player.dx, 0) then
-		player.x += player.dx
-	else
-		player.dx *= -player.bounce
-	end
+			if not solid_a(player, player.dx, 0) then
+				player.x += player.dx
+			else
+				player.dx *= -player.bounce
+			end
 
-	-- ditto for y
+			-- ditto for y
 
-	if not solid_a(player, 0, player.dy) then
-		player.y += player.dy
-	else
-		player.dy *= -player.bounce
-	end
-	---------------------------
-	------damage control-------
-
-	---------------------------
-	---------------------------
+			if not solid_a(player, 0, player.dy) then
+				player.y += player.dy
+			else
+				player.dy *= -player.bounce
+			end
 	
-	-- friction (lower for more)
-	player.dx *=.3
-	player.dy *=.3
+			-- friction (lower for more)
+			player.dx *=.3
+			player.dy *=.3
 	
-	------------cooldowns-----------------
-	if(spear.cooldown!=0) spear.cooldown=spear.cooldown-1
-	if(player.dmg_cooldown!=0) player.dmg_cooldown=player.dmg_cooldown-1
-	if(itembox[player.item].cooldown!=0) itembox[player.item].cooldown=itembox[player.item].cooldown-1
-	-----------------------------
+			------------cooldowns-----------------
+			if(spear.cooldown!=0) spear.cooldown=spear.cooldown-1
+			if(player.dmg_cooldown!=0) player.dmg_cooldown=player.dmg_cooldown-1
+			if(itembox[player.item].cooldown!=0) itembox[player.item].cooldown=itembox[player.item].cooldown-1
+			-----------------------------
 	
-	-- advance animation according
-	-- to speed (or reset when
-	-- standing almost still)
-	spd=sqrt(player.dx*player.dx+player.dy*player.dy)
-	player.f= (player.f+spd*2) % player.anims[player.d].fr -- 6 frames
-	if (spd < 0.05) f=0
+			-- advance animation according
+			-- to speed (or reset when
+			-- standing almost still)
+			spd=sqrt(player.dx*player.dx+player.dy*player.dy)
+			player.f= (player.f+spd*2) % player.anims[player.d].fr -- 6 frames
+			if (spd < 0.05) f=0
+			
+			-----triggers cutscene-------
+			--if not(player.hp>0) then
+			--		scene.number=2
+			--		scene.running=true
+			--end
 	
-	-- collect apple
-	if (mget(player.x,player.y)==10) then
-		mset(player.x,player.y,14)
-		sfx(0)
-	end
+			-- collect apple
+			if (mget(player.x,player.y)==10) then
+				mset(player.x,player.y,14)
+				sfx(0)
+			end
 	
 	end
         
@@ -317,7 +275,7 @@ end
 
 function draw_gui()
 			
-			if (player.hp>0) then
+			if (player.hp>0 and boss1.hp>0) then
 					--character
    		spr(135,0,0,2,2)
    
@@ -349,10 +307,15 @@ function draw_gui()
 	 			spr(wpnbox[player.weapon][1],14,0,1,2)
 	 			if(spear.cooldown!=0) print(spear.cooldown, 16, 5)
 					 	
-	 	else
+	 	elseif(player.hp<=0) then
 	 	
-	 		cls(6)
-	 		print_centered('has muerto')
+	 		cls(5)
+	 		print('has muerto', 6*8, 8*8)
+	 		
+	 	elseif(player.hp<=0) then
+	 	
+	 		cls(5)
+	 		print('has ganado', 6*8, 8*8, 9)
 	 		
 	 	end 	
 	 
@@ -464,9 +427,9 @@ function draw_blood(a)
 	--pset(a.x+flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, a.blood_color)
 	--pset(a.x-flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, a.blood_color)
 	rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
-	rectfill2(a.x-flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, 1, 1, 8)
-	rectfill2(a.x+flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, 1, 1, 8)
-	rectfill2(a.x-flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, 1, 1, 8)
+	rectfill2((a.x-flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1, 1, 8)
+	rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1, 1, 8)
+	rectfill2((a.x-flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
 
 end
 
@@ -679,7 +642,7 @@ function spawn_boss(n)
 		h=0.2,
   -------------
   f=0,
-  hp=8,
+  hp=10,
   dmg=0.5,
   dmg_cooldown=0,
   cooldown={
@@ -776,12 +739,18 @@ function draw_boss(n)
 		---------draw healthbar-------
 		if (boss1.hp>0) then
 				--health
-				rectfill2(5*8, 14*8, boss1.hp*8, 2, 8)
+				rectfill2(5*8-10, 14*8, boss1.hp*8, 2, 8)
 				--name
-				rectfill2(7*8-4, 15*8, 6*8-4, 6, 2)
-				print("dark knight", 7*8-4, 15*8, 8)
+				rectfill2(6*8-0.5, 15*8, 6*8-4, 6, 2)
+				print("dark knight", 6*8-1, 15*8, 8)
 		end
 		------------------------------
+		
+		-----triggers cutscene-------
+			--if not(boss1.hp>0) then
+			--		scene.number=3
+			--		scene.running=true
+			--end
 	
 	end
 end
@@ -915,6 +884,93 @@ end
 -->8
 --scenes
 
+function draw_scene(n)
+
+	----prueba de escenas-------
+	--[[
+		cls()
+		map(52, 0, 0, 0, 16, 16)
+		addwind(0*8, 0*8, 48, 20, {"linea1", "linea2"})
+	]]
+
+	if(n==1) then     --opening scene
+	
+		cls()		
+		map(52, 0, 0, 0, 16, 16)
+		addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
+		
+		for i=0, scene.timer do
+				if(i==scene.timer or btnp(❎)) scene.running=false
+		end		
+	
+	elseif(n==2) then --player death
+	
+		cls()
+		--map(32, 0, 0, 0, 16, 16)
+		
+		
+		scene.running=false
+	
+	elseif(n==3) then --boss1 defeat
+
+		cls()
+		
+		map(32, 0, 0, 0, 16, 16)
+		--dark knight--
+ 	sspr( 0, 96, 32, 32, 65, 2, 60, 60 )
+ 	--spear--------
+ 	sspr( 32, 96, 32, 16, 45, 70, 60, 60,true)
+ 	
+ 	scene.running=false
+
+	elseif(n==4) then --boss1 second stage
+		
+		cls()
+		map(72, 0, 0, 0, 16, 16)
+		
+		--first panel--
+			
+			--sword---
+				sspr( 80, 88, 16, 8, 10, 40, 25, 15 )
+				sspr( 96, 112, 8, 8, 35, 40, 15, 15 )
+			
+			--helmet--		
+				sspr( 80, 96, 16, 16, 8, 6, 40, 40,true )
+			
+			--tears---
+				sspr( 96, 120, 8, 8, 10, 15, 10, 5)
+				sspr( 96, 120, 8, 8, 40, 35, 10, 5)
+				sspr( 96, 120, 8, 8, 8, 59, 48, 5)
+
+		--second panel--
+			
+			--body--
+				sspr( 80, 112, 16, 16, 62, 2, 60, 60)
+			
+			--sword edges--
+				--sspr( 48, 96, 8, 8, 58, 50, 15, 15)
+				sspr( 56, 96, 8, 8, 115, 40, 15, 15)
+				sspr( 56, 104, 8, 8, 58, 45, 15, 15)
+				sspr( 56, 112, 8, 8, 74, 52, 15, 15)
+
+		--third panel--
+			
+			--face----------
+				sspr( 64, 96, 16, 16, 40, 74, 45, 45)
+			
+			--sword edges---
+				sspr( 48, 96, 8, 8, 20, 74, 15, 15)
+				sspr( 56, 96, 8, 8, 95, 74, 15, 15)
+				sspr( 56, 104, 8, 8, 10, 94, 15, 15)
+				sspr( 56, 112, 8, 8, 100, 104, 15, 15)
+		----------------
+		
+		scene.running=false
+		
+	end
+
+end
+
 function addwind(_x, _y, _w, _h, _txt)
 
 	local w={
@@ -924,6 +980,8 @@ function addwind(_x, _y, _w, _h, _txt)
 	h=_h, 
 	txt=_txt
 	}
+	
+	w.butt=true
 	
 	add(wind, w)
 	return w
