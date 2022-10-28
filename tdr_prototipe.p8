@@ -171,7 +171,7 @@ function _draw()
 	
 			draw_gui()  
 	
-			--drawind()
+			drawind()
 	
 			if (hptrack.player!=player.hp and player.hp>0) then
 					draw_blood(player)
@@ -179,8 +179,11 @@ function _draw()
 			end
 			
 	else
-			drawind()		
-			draw_scene(scene.number)
+			drawind()
+			if (scene.timer>0) then		
+				draw_scene(scene.number)
+				scene.timer=scene.timer-1
+			end
 	end
 	
 end
