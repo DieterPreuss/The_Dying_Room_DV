@@ -321,7 +321,6 @@ function draw_gui()
 	 		print('has ganado', 6*8, 8*8, 9)
 	 		
 	 	end 	
-	 
 end
 
 function draw_weapon()
@@ -922,7 +921,7 @@ function draw_scene(n)
 		--dark knight--
  	sspr( 0, 96, 32, 32, 65, 2, 60, 60 )
  	--spear--------
- 	sspr( 32, 96, 32, 16, 45, 70, 60, 60,true)
+ 	sspr( 32, 96, 16, 16, 75, 70, 30, 60,true)
  	
  	scene.running=false
 
