@@ -7,11 +7,12 @@ objs = {}  	-- a list of all the objects in the game (starts empty)
 actor = {} 	-- all actors
 wpns = {}  	-- list of weapons
 wind = {}   -- list of text windows
+blood = {}
 
 scene= {
 	number=1,
 	running=false,
-	timer=50000
+	timer=5000
 } -- keeps track of scenes playing at the moment
 
 boss={ 					-- keeps track of the boss on screen
@@ -114,7 +115,7 @@ function _init()
  }
  
  --create boss
- if (boss.alive==false and scene.running==false) then
+ if (scene.running==false) then
  	boss.number=boss.number+1
  	spawn_boss(boss.number)
  	boss.alive=true 	 
@@ -145,7 +146,7 @@ function _draw()
 			map()
 			
 			--print data
-			--[[
+
 			print_centered(player.hp)
 			print("dx: ", 10*8, 0)
 			print(player.dx, 13*8, 0)
@@ -155,8 +156,10 @@ function _draw()
 			print(player.x, 13*8, 16)
 			print("y: ", 10*8, 24)
 			print(player.y, 13*8, 24)
-			]]
-	
+
+			
+			draw_blood()
+			
 			-- draw the player
 			if (player.hp!=0) then	
 				spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
@@ -164,25 +167,35 @@ function _draw()
 	 			2,2,player.d=="walkright"    -- w,h, flip
 				)
 			end
-						
-			draw_boss(boss.number)
+			
+			-- create & draw the boss
+ 		if (boss.alive==false) then
+ 				boss.number=boss.number+1
+ 				spawn_boss(boss.number)
+ 				boss.alive=true
+ 		elseif(boss.alive==true) then
+ 				draw_boss(boss.number) 	 
+ 		end					
 	
 			draw_weapon()
 	
 			draw_gui()  
 	
 			drawind()
-	
+			
 			if (hptrack.player!=player.hp and player.hp>0) then
-					draw_blood(player)
-					hptrack.player=hptrack.player-1
+					add_blood(player)
+					hptrack.player=player.hp
 			end
 			
-	else
+	elseif(scene.running==true) then
 			drawind()
-			if (scene.timer>0) then		
+			cls()	
+			if (scene.timer!=0) then		
 				draw_scene(scene.number)
 				scene.timer=scene.timer-1
+			else
+				scene.running=false	
 			end
 	end
 	
@@ -400,8 +413,10 @@ end
 function use_item(i)
 
 	if(i=="potion") then
-			player.hp=player.hp+1
-			itembox[player.item].cooldown=60
+			if(player.hp<8) then
+					player.hp=player.hp+1
+					itembox[player.item].cooldown=60
+			end
 	elseif(i=="bomb") then
 			
 			itembox[player.item].cooldown=120
@@ -413,10 +428,39 @@ function use_item(i)
 end
 
 
+
+
 -->8
 --collisions and damage
 
-function draw_blood(a)
+function add_blood(a)
+	local b1={
+		x=(a.x+flr(rnd(2)) + 1)*8,
+		y=(a.y+flr(rnd(2)) + 1)*8,
+		switch= rnd({true, false})
+	}
+	add(blood, b1)
+	local b2={
+		x=(a.x-flr(rnd(2)) + 1)*8,
+		y=(a.y-flr(rnd(2)) + 1)*8,
+		switch= rnd({true, false})
+	}
+	add(blood, b2)
+	local b3={
+		x=(a.x+flr(rnd(2)) + 1)*8,
+		y=(a.y-flr(rnd(2)) + 1)*8,
+		switch= rnd({true, false})
+	}
+	add(blood, b3)
+	local b4={
+		x=(a.x-flr(rnd(2)) + 1)*8,
+		y=(a.y+flr(rnd(2)) + 1)*8,
+		switch= rnd({true, false})
+	}
+	add(blood, b4)
+end
+
+function draw_blood()
 
 --[[	for y=0,127 do
   for x=0,127 do
@@ -424,14 +468,26 @@ function draw_blood(a)
   end
 	end]]
 	--flr(rnd(6)) + 1
+	
 	--pset(a.x+flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, a.blood_color)
 	--pset(a.x-flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, a.blood_color)
 	--pset(a.x+flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, a.blood_color)
 	--pset(a.x-flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, a.blood_color)
-	rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
-	rectfill2((a.x-flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1, 1, 8)
-	rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1, 1, 8)
-	rectfill2((a.x-flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
+	
+	--rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
+	--rectfill2((a.x-flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1, 1, 8)
+	--rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1, 1, 8)
+	--rectfill2((a.x-flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
+	
+	--bswitch= rnd({true, false})
+	--spr(117, (a.x+flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1,1,bswitch)
+	--spr(117, (a.x-flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1,1,bswitch)
+	--spr(117, (a.x+flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1,1,bswitch)
+	--spr(117, (a.x-flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1,1,bswitch)
+	
+	for b in all(blood) do
+			spr(117, b.x, b.y, 1, 1, b.switch)
+	end
 
 end
 
@@ -886,6 +942,29 @@ end
 -->8
 --scenes
 
+scene1={
+		dialog1={
+			txt={"hola mundo1", "hola mundo2"},
+ 	 dur=500,
+ 	 author=player
+		}
+}
+	
+scene2={}
+scene3={}
+scene4={}
+scene5={}
+
+
+translator={
+	dialog1=1,
+	dialog2=2,
+	dialog3=3,
+	dialog4=4,
+	dialog5=5,
+	dialog6=6,
+}
+
 function draw_scene(n)
 
 	----prueba de escenas-------
@@ -897,25 +976,23 @@ function draw_scene(n)
 
 	if(n==1) then     --opening scene
 	
-		cls()		
+			
 		map(52, 0, 0, 0, 16, 16)
-		addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
+		--addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
+		--draw_scene_textbox(scene1)
+		--showmsg("hola", 1)
+		print(scene.timer, 13*8, 24, 8)
 		
-		for i=0, scene.timer do
-				if(i==scene.timer or btnp(❎)) scene.running=false
-		end		
+		if(btnp(🅾️)) scene.timer=1
 	
 	elseif(n==2) then --player death
 	
-		cls()
 		--map(32, 0, 0, 0, 16, 16)
 		
 		
-		scene.running=false
+		if(btnp(🅾️)) scene.timer=1
 	
 	elseif(n==3) then --boss1 defeat
-
-		cls()
 		
 		map(32, 0, 0, 0, 16, 16)
 		--dark knight--
@@ -923,11 +1000,10 @@ function draw_scene(n)
  	--spear--------
  	sspr( 32, 96, 16, 16, 75, 70, 30, 60,true)
  	
- 	scene.running=false
+ 	if(btnp(🅾️)) scene.timer=1
 
 	elseif(n==4) then --boss1 second stage
 		
-		cls()
 		map(72, 0, 0, 0, 16, 16)
 		
 		--first panel--
@@ -967,11 +1043,54 @@ function draw_scene(n)
 				sspr( 56, 112, 8, 8, 100, 104, 15, 15)
 		----------------
 		
-		scene.running=false
+		if(btnp(🅾️)) scene.timer=1
 		
 	end
+	
+	drawind()
 
 end
+
+--[[
+function draw_scene_textbox(s)
+	 --[[
+	 scene1={
+ 	dialog1={
+ 	 txt={"hola mundo1", "hola mundo2"},
+ 	 dur=500,
+ 	 author=player
+ 	}
+	 ]]
+		local wx, wy, ww, wh= 4*8, 12*8, 48, 20
+		rectfill2(wx, wy, ww, wh, 0)
+		rectfill2(wx+1, wy+1, ww-2, wh-2, 6)
+		rectfill2(wx+2, wy+2, ww-4, wh-4, 1)
+		
+		wx+=4
+		wy+=4
+		clip(wx, wy, ww-8, wh-8)
+		
+		local j=1
+		
+		for i=1,#s[j].txt do
+			
+			local txt=s[j].txt[i]
+			print(txt, wx, wy, 6)
+			wy+=6
+		
+		end
+		
+		clip()
+		
+		s[j].dur-=1
+		
+		if(s[j].dur<0) then
+				j+=1
+		end
+ 
+end
+
+]]
 
 function addwind(_x, _y, _w, _h, _txt)
 
@@ -983,7 +1102,7 @@ function addwind(_x, _y, _w, _h, _txt)
 	txt=_txt
 	}
 	
-	w.butt=true
+	--w.butt=true
 	
 	add(wind, w)
 	return w
@@ -1116,12 +1235,12 @@ __gfx__
 88081111111118000099a00000000700000000000000000000008885822000000000000d5400000000000000035000001ff556ff100000000000999949440000
 88008211111280000009000000000000000000000000000000087888882200000000005dd0000000000000000350000011f56551100000000009494999440000
 080818222228180000000000000000000000000000000000000887888882000000000567700000000000000035000000011611114444a0000009999949400000
-00821111157112800000000000000090000000000000000000088888888200000000567700000000000000035500000000611f4444444a000009949994400000
-0082111152511280090000000000099777777770000000000008888888220000000567700000000000000005500000000704444444444aa00004994444000000
-808115552515118099999999999aa98a666667000000000000002888822000000056770000000000000000333300000000040440554440a00000444440000000
-80811875511811800a00000000000aa7777770000000000000000222220000000567700000000000000005555550000500440440055440000000000000000000
-088558211128880000000000000000a0000000000000000000000000000000000777000000000000000003333333005400400400004044000000000000000000
-00855821811800000000000000000000000000000000000000000000000000000000000000000000000555555555504000400400004004000000000000000000
+00821111157112800000000000000090000000000000088000088888888200000000567700000000000000035500000000611f4444444a000009949994400000
+0082111152511280090000000000099777777770000800800008888888220000000567700000000000000005500000000704444444444aa00004994444000000
+808115552515118099999999999aa98a666667000888000000002888822000000056770000000000000000333300000000040440554440a00000444440000000
+80811875511811800a00000000000aa7777770000080000000000222220000000567700000000000000005555550000500440440055440000000000000000000
+088558211128880000000000000000a0000000000000088000000000000000000777000000000000000003333333005400400400004044000000000000000000
+00855821811800000000000000000000000000000000880000000000000000000000000000000000000555555555504000400400004004000000000000000000
 00088811888000000000000000000000000000000000000000000000000000000000000000000000000333333333330000000400000004000000000000000000
 6666666655555565444444446666666601111110555555655555556502222222222222002222222222222222011111100777777011111110000a900000022000
 5555655555555565459999545444444518888881555555655555556502771717171772007717177277171772788888817bbbbbb7888888810004500000255200
@@ -1206,4 +1325,4 @@ a88080808080808080808080808080b800000000000000000000000000000000efefefefdeffffff
 a88080808080808080808080808080b800000000000000000000000000000000deefdededeefefefffc0c0c0c0c0c0c000000000deefefefefefefefeeeeeeeeeeeeeeee00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
 a88080808080808080808080808080b800000000000000000000000000000000efdeefefdeefefefffc0c0c0c0c0c0c000000000ffefefefefeffffffffffffefefefefe00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
 a89383808080808080808080808080b800000000000000000000000000000000efefefefefdedffdfdc0c0c0c0c0c0c000000000dedeefdedeefefefefffeeeeeeeeeeee00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
-b5b7b7b7b7b7b7b7b7b7b7b7b7b7b7b600000000000000000000000000000000efefefefefc0dfdffdc0c0c0c0c0c0c000000000efefdeefefefefefefffcfcfcfcfcfcf00000000cececececececececececececececece00000000000000000000000000000000000000000000000000000000000000000000000000000000
+b5b7b7b7b7b7b7b7b7b7b7b7b7b7b7b600007500000000000000000000000000efefefefefc0dfdffdc0c0c0c0c0c0c000000000efefdeefefefefefefffcfcfcfcfcfcf00000000cececececececececececececececece00000000000000000000000000000000000000000000000000000000000000000000000000000000
