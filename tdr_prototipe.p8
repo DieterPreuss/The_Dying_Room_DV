@@ -947,6 +947,11 @@ scene1={
 			txt={"hola mundo1", "hola mundo2"},
  	 dur=500,
  	 author=player
+		},
+		dialog2={
+			txt={"muahahahah", "bienvenido"},
+ 	 dur=500,
+ 	 author=boss
 		}
 }
 	
@@ -978,9 +983,22 @@ function draw_scene(n)
 	
 			
 		map(52, 0, 0, 0, 16, 16)
+		
+		---------dialogs--------------
 		--addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
 		--draw_scene_textbox(scene1)
 		--showmsg("hola", 1)
+		
+		if (scene.timer==4990) then
+				addwind(4*8, 12*8, 48, 20, scene1.dialog1.txt)
+		elseif(scene.timer==4900 or btnp(❎)) then
+				del( wind, wind[1] )
+				addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt) 			
+		elseif(scene.timer==4880) then
+				addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt)
+		end
+		------------------------------
+		
 		print(scene.timer, 13*8, 24, 8)
 		
 		if(btnp(🅾️)) scene.timer=1
@@ -1102,7 +1120,7 @@ function addwind(_x, _y, _w, _h, _txt)
 	txt=_txt
 	}
 	
-	--w.butt=true
+	w.butt=true
 	
 	add(wind, w)
 	return w
