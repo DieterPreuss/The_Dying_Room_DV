@@ -62,7 +62,6 @@ function _init()
  add(actor,player)
  
  --create spear
-
  spear={
  	name="spear",
  	x=player.x,
@@ -80,6 +79,24 @@ function _init()
  
  add(actor, spear)
  
+ --create knife
+ knife={
+ 	name="knife",
+ 	x=18,
+ 	y=18,
+ 	cooldown=0,
+ 	dmg=2,
+ 	w=0.4,
+		h=0.4,
+ 	sprt={
+ 		h={104,w=2,h=2}, 		
+ 		vu={104,w=2,h=2},
+ 		vd={1047,w=2,h=2},
+ 	},
+ }
+ 
+ add(actor, knife)
+ 
  healthbar={
  	--ten={},
   --nine={},
@@ -95,6 +112,10 @@ function _init()
  }
  
  itembox={
+ 	empty={
+ 		sprt=137,
+ 		cooldown=0
+ 	},
  	potion={
  		sprt=171,
  		cooldown=0
@@ -105,6 +126,10 @@ function _init()
  	},
  	knife={
  		sprt=144,
+ 		cooldown=0
+ 	},
+ 	apple={
+ 		sprt=102,
  		cooldown=0
  	}
  }
@@ -174,7 +199,8 @@ function _draw()
  				spawn_boss(boss.number)
  				boss.alive=true
  		elseif(boss.alive==true) then
- 				draw_boss(boss.number) 	 
+ 				draw_boss(boss.number)
+ 				draw_boss_weapon(boss.number) 	 
  		end					
 	
 			draw_weapon()
@@ -274,158 +300,22 @@ function _update()
 			--		scene.number=2
 			--		scene.running=true
 			--end
-	
+			
+			--[[
 			-- collect apple
 			if (mget(player.x,player.y)==10) then
 				mset(player.x,player.y,14)
 				sfx(0)
 			end
+			]]
+			
+			--allows the collection of items
+			collect_item()
 	
 	end
         
 end
 
-function print_centered(str)
-  print(str, player.x*8,player.y*8-9, 8) 
-end
-
-function draw_gui()
-			
-			if (player.hp>0 and boss1.hp>0) then
-					--character
-   		spr(135,0,0,2,2)
-   
-   		--healthbar
-   		vacumx=23
-   		if(player.hp==8) auxhp="eight"
-   		if(player.hp==7) auxhp="seven"
-   		if(player.hp==6) auxhp="six"
-   		if(player.hp==5) auxhp="five"
-   		if(player.hp==4) auxhp="four"
-   		if(player.hp==3) auxhp="three"
-   		if(player.hp==2) auxhp="two"
-   		if(player.hp==1) auxhp="one"
-   
-	 	
-					for v in all(healthbar[auxhp]) do
-  					vacumx=vacumx+8
-  					spr(v,vacumx,8,1,1)
-					end
-					
-					--itembox
-	 			spr(itembox[player.item].sprt,22,0,1,1)
-	 			if(itembox[player.item].cooldown!=0) print(itembox[player.item].cooldown, 22, 2)
-	 	
-	 			--hp
-	 			spr(153,22,8,1,1)
-	 	
-	 			--weaponbox
-	 			spr(wpnbox[player.weapon][1],14,0,1,2)
-	 			if(spear.cooldown!=0) print(spear.cooldown, 16, 5)
-					 	
-	 	elseif(player.hp<=0) then
-	 	
-	 		cls(5)
-	 		print('has muerto', 6*8, 8*8)
-	 		
-	 	elseif(player.hp<=0) then
-	 	
-	 		cls(5)
-	 		print('has ganado', 6*8, 8*8, 9)
-	 		
-	 	end 	
-end
-
-function draw_weapon()
-			
-			----sprite and position--------
-			if (player.weapon=="spear") then
-			
- 			if (player.d== "walkleft") then
-					if(spear.cooldown==0) then
-						spear.x=player.x-2.5
- 					spear.y=player.y
- 				end
-					sprt=spear.sprt.h
-					switch=true
-				elseif(player.d== "walkright") then
-					if(spear.cooldown==0) then
-						spear.x=player.x+0.1
-						spear.y=player.y+0.5
-					end
-					sprt=spear.sprt.h
-					switch=false
-				elseif(player.d== "walkup") then
-					if(spear.cooldown==0) then
-						spear.x=player.x-1
- 					spear.y=player.y-1.7
- 				end
-					sprt=spear.sprt.vu
-					switch=false
-				elseif(player.d== "walkdown") then
-					if(spear.cooldown==0) then
-						spear.x=player.x+0.6
- 					spear.y=player.y+0.3
- 				end
-					sprt=spear.sprt.vd
-					switch=true
-				else
-					if(spear.cooldown==0) then
-						spear.x=player.x+0.6
- 					spear.y=player.y+0.3
- 				end
-					sprt=spear.sprt.vd
-					switch=true
-				end
-				-----------------------------	
-			
-				--spear
-   	spr(sprt[1],
-   	spear.x*8+2,
-   	spear.y*8+1,
-   	sprt.w,sprt.h,switch)
-   end
-	 
-end
-
-function spear_attack()
-
-	for i=0,15 do
-  if (player.d== "walkleft") then
-  	spear.x=spear.x-(i*0.01) 
-  end
-  if (player.d== "walkright") then
-  	spear.x=spear.x+(i*0.01) 
-  end
-  if (player.d== "walkup") then
-  	spear.y=spear.y-(i*0.01) 
-  end
-  if (player.d== "walkdown") then
-  	spear.y=spear.y+(i*0.01) 
-  end
-  if (player.d== "idle") then
-  	spear.y=spear.y+(i*0.01) 
-  end
-	end
-	 
-end
-
-function use_item(i)
-
-	if(i=="potion") then
-			if(player.hp<8) then
-					player.hp=player.hp+1
-					itembox[player.item].cooldown=60
-			end
-	elseif(i=="bomb") then
-			
-			itembox[player.item].cooldown=120
-	elseif(i=="knife") then
-			
-			itembox[player.item].cooldown=120
-	end
-		 
-end
 
 
 
@@ -791,7 +681,7 @@ function draw_boss(n)
 		-------------------------------		
 	
 		------------
-		draw_boss_weapon(1)	
+			
 		------------
 		
 		---------draw healthbar-------
@@ -820,7 +710,7 @@ function draw_boss_weapon(n)
 		if (boss1.d== "walkleft") then
 				if(sword.cooldown==0) then
 				--if not btn(🅾️) then
-					sword.x=boss1.x-2.5
+					sword.x=boss1.x-3.5
  				sword.y=boss1.y
  			end
 				sprt=sword.sprt.h
@@ -990,12 +880,12 @@ function draw_scene(n)
 		--showmsg("hola", 1)
 		
 		if (scene.timer==4990) then
-				addwind(4*8, 12*8, 48, 20, scene1.dialog1.txt)
+				addwind(4*8, 12*8, 48, 20, scene1.dialog1.txt, "player")
 		elseif(scene.timer==4900 or btnp(❎)) then
 				del( wind, wind[1] )
-				addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt) 			
+				addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt, "boss") 			
 		elseif(scene.timer==4880) then
-				addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt)
+				--addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt)
 		end
 		------------------------------
 		
@@ -1110,14 +1000,15 @@ end
 
 ]]
 
-function addwind(_x, _y, _w, _h, _txt)
+function addwind(_x, _y, _w, _h, _txt, _author)
 
 	local w={
 	x=_x, 
 	y=_y, 
 	w=_w, 
 	h=_h, 
-	txt=_txt
+	txt=_txt,
+	author=_author
 	}
 	
 	w.butt=true
@@ -1143,7 +1034,8 @@ end
 function drawind()
 
 	for w in all(wind) do
-	
+		
+		local col=6
 		local wx, wy, ww, wh= w.x, w.y, w.w, w.h
 		rectfill2(wx, wy, ww, wh, 0)
 		rectfill2(wx+1, wy+1, ww-2, wh-2, 6)
@@ -1153,10 +1045,15 @@ function drawind()
 		wy+=4
 		clip(wx, wy, ww-8, wh-8)
 		
+		------------------
+		if (w.author=="player") col=6
+		if (w.author=="boss") col=8
+		------------------
+		
 		for i=1,#w.txt do
 			
 			local txt=w.txt[i]
-			print(txt, wx, wy, 6)
+			print(txt, wx, wy, col)
 			wy+=6
 		
 		end
@@ -1194,6 +1091,202 @@ function showmsg(txt)
  talkwind=addwind(16,50,96,#txt*6+7,txt)
  talkwind.butt=true
  
+end
+-->8
+--gui related
+
+function print_centered(str)
+  print(str, player.x*8,player.y*8-9, 8) 
+end
+
+function draw_gui()
+			
+			if (player.hp>0 and boss1.hp>0) then
+					--character
+   		spr(135,0,0,2,2)
+   
+   		--healthbar
+   		vacumx=23
+   		if(player.hp==8) auxhp="eight"
+   		if(player.hp==7) auxhp="seven"
+   		if(player.hp==6) auxhp="six"
+   		if(player.hp==5) auxhp="five"
+   		if(player.hp==4) auxhp="four"
+   		if(player.hp==3) auxhp="three"
+   		if(player.hp==2) auxhp="two"
+   		if(player.hp==1) auxhp="one"
+   
+	 	
+					for v in all(healthbar[auxhp]) do
+  					vacumx=vacumx+8
+  					spr(v,vacumx,8,1,1)
+					end
+					
+					--itembox
+	 			spr(itembox[player.item].sprt,22,0,1,1)
+	 			if(itembox[player.item].cooldown!=0) print(itembox[player.item].cooldown, 22, 2)
+	 	
+	 			--hp
+	 			spr(153,22,8,1,1)
+	 	
+	 			--weaponbox
+	 			spr(wpnbox[player.weapon][1],14,0,1,2)
+	 			if(spear.cooldown!=0) print(spear.cooldown, 16, 5)
+					 	
+	 	elseif(player.hp<=0) then
+	 	
+	 		cls(5)
+	 		print('has muerto', 6*8, 8*8)
+	 		
+	 	elseif(player.hp<=0) then
+	 	
+	 		cls(5)
+	 		print('has ganado', 6*8, 8*8, 9)
+	 		
+	 	end 	
+end
+
+function collect_item()
+
+	-- collect bomb
+	if (mget(player.x,player.y)==68) then
+			mset(player.x,player.y,128)
+			mset(player.x+1,player.y+1,128)
+			mset(player.x-1,player.y-1,128)
+			mset(player.x+1,player.y-1,128)
+			mset(player.x-1,player.y+1,128)
+			mset(player.x+1,player.y,128)
+			mset(player.x,player.y+1,128)
+			player.item="bomb"
+			sfx(0)
+	-- collect potion		
+	elseif(mget(player.x,player.y)==70) then
+			mset(player.x,player.y,128)
+			mset(player.x+1,player.y+1,128)
+			mset(player.x-1,player.y-1,128)
+			mset(player.x+1,player.y-1,128)
+			mset(player.x-1,player.y+1,128)
+			mset(player.x+1,player.y,128)
+			mset(player.x,player.y+1,128)
+			player.item="potion"
+			sfx(0)
+	-- collect knife
+	elseif(mget(player.x,player.y)==104) then
+			mset(player.x,player.y,128)
+			mset(player.x+1,player.y+1,128)
+			mset(player.x-1,player.y-1,128)
+			mset(player.x+1,player.y-1,128)
+			mset(player.x-1,player.y+1,128)
+			mset(player.x+1,player.y,128)
+			mset(player.x,player.y+1,128)
+			player.item="knife"
+			sfx(0)		
+	-- collect apple
+	elseif(mget(player.x,player.y)==102) then
+			mset(player.x,player.y,128)
+			mset(player.x+1,player.y+1,128)
+			mset(player.x-1,player.y-1,128)
+			mset(player.x+1,player.y-1,128)
+			mset(player.x-1,player.y+1,128)
+			mset(player.x+1,player.y,128)
+			mset(player.x,player.y+1,128)
+			if(player.hp<8) player.hp=player.hp+1
+			sfx(0)
+	end
+		 
+end
+
+function use_item(i)
+
+	if(i=="potion") then
+			if(player.hp<8) then
+					player.hp=player.hp+1
+					itembox[player.item].cooldown=60
+			end
+	elseif(i=="bomb") then
+			
+			itembox[player.item].cooldown=120
+	elseif(i=="knife") then
+			
+			itembox[player.item].cooldown=120	
+	end
+		 
+end
+-->8
+-- weapons and attacks
+
+function draw_weapon()
+			
+			----sprite and position--------
+			if (player.weapon=="spear") then
+			
+ 			if (player.d== "walkleft") then
+					if(spear.cooldown==0) then
+						spear.x=player.x-2.5
+ 					spear.y=player.y
+ 				end
+					sprt=spear.sprt.h
+					switch=true
+				elseif(player.d== "walkright") then
+					if(spear.cooldown==0) then
+						spear.x=player.x+0.1
+						spear.y=player.y+0.5
+					end
+					sprt=spear.sprt.h
+					switch=false
+				elseif(player.d== "walkup") then
+					if(spear.cooldown==0) then
+						spear.x=player.x-1
+ 					spear.y=player.y-1.7
+ 				end
+					sprt=spear.sprt.vu
+					switch=false
+				elseif(player.d== "walkdown") then
+					if(spear.cooldown==0) then
+						spear.x=player.x+0.6
+ 					spear.y=player.y+0.3
+ 				end
+					sprt=spear.sprt.vd
+					switch=true
+				else
+					if(spear.cooldown==0) then
+						spear.x=player.x+0.6
+ 					spear.y=player.y+0.3
+ 				end
+					sprt=spear.sprt.vd
+					switch=true
+				end
+				-----------------------------	
+			
+				--spear
+   	spr(sprt[1],
+   	spear.x*8+2,
+   	spear.y*8+1,
+   	sprt.w,sprt.h,switch)
+   end
+	 
+end
+
+function spear_attack()
+
+	for i=0,15 do
+  if (player.d== "walkleft") then
+  	spear.x=spear.x-(i*0.01) 
+  end
+  if (player.d== "walkright") then
+  	spear.x=spear.x+(i*0.01) 
+  end
+  if (player.d== "walkup") then
+  	spear.y=spear.y-(i*0.01) 
+  end
+  if (player.d== "walkdown") then
+  	spear.y=spear.y+(i*0.01) 
+  end
+  if (player.d== "idle") then
+  	spear.y=spear.y+(i*0.01) 
+  end
+	end
+	 
 end
 __gfx__
 00020028820022000020002882200002000000288220022000200028822000200000002882200020000000288220000200800808a808008000880808a8080008
@@ -1341,6 +1434,6 @@ a88080808080808080808080808080b800000000000000000000000000000000efefefefefefefc0
 a88080808080808080808080808080b800000000000000000000000000000000efefefefefefefc0c0c0c0c0c0c0c0c000000000deefefefefefefeeeeeeeeeeeeeeeeee00000000cec0c0c0c0dfdfdfdfdfdfc0c0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
 a88080808080808080808080808080b800000000000000000000000000000000efefefefdeffffffffffc0c0c0c0c0c000000000deefefefefefefeffefefefefefefefe00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
 a88080808080808080808080808080b800000000000000000000000000000000deefdededeefefefffc0c0c0c0c0c0c000000000deefefefefefefefeeeeeeeeeeeeeeee00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
-a88080808080808080808080808080b800000000000000000000000000000000efdeefefdeefefefffc0c0c0c0c0c0c000000000ffefefefefeffffffffffffefefefefe00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
-a89383808080808080808080808080b800000000000000000000000000000000efefefefefdedffdfdc0c0c0c0c0c0c000000000dedeefdedeefefefefffeeeeeeeeeeee00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
+a88080806869806667804647804445b800000000000000000000000000000000efdeefefdeefefefffc0c0c0c0c0c0c000000000ffefefefefeffffffffffffefefefefe00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
+a89383807879807677805657805455b800000000000000000000000000000000efefefefefdedffdfdc0c0c0c0c0c0c000000000dedeefdedeefefefefffeeeeeeeeeeee00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
 b5b7b7b7b7b7b7b7b7b7b7b7b7b7b7b600007500000000000000000000000000efefefefefc0dfdffdc0c0c0c0c0c0c000000000efefdeefefefefefefffcfcfcfcfcfcf00000000cececececececececececececececece00000000000000000000000000000000000000000000000000000000000000000000000000000000
