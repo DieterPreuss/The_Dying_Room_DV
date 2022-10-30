@@ -296,10 +296,10 @@ function _update()
 			if (spd < 0.05) f=0
 			
 			-----triggers cutscene-------
-			--if not(player.hp>0) then
-			--		scene.number=2
-			--		scene.running=true
-			--end
+			if not(player.hp>0) then
+					scene.number=2
+					scene.running=true
+			end
 			
 			--[[
 			-- collect apple
@@ -311,7 +311,9 @@ function _update()
 			
 			--allows the collection of items
 			collect_item()
-	
+			
+	elseif(scene.number==2 and scene.timer==0) then
+			run()
 	end
         
 end
@@ -590,7 +592,7 @@ function spawn_boss(n)
 		h=0.2,
   -------------
   f=0,
-  hp=10,
+  hp=10, --10
   dmg=0.5,
   dmg_cooldown=0,
   cooldown={
@@ -680,9 +682,12 @@ function draw_boss(n)
 		end
 		-------------------------------		
 	
-		------------
-			
-		------------
+		-----------draw blood--------
+		if (hptrack.boss1!=boss1.hp and boss1.hp>0) then
+					add_blood(boss1)
+					hptrack.boss1=boss1.hp
+		end	
+		-----------------------------
 		
 		---------draw healthbar-------
 		if (boss1.hp>0) then
@@ -695,10 +700,10 @@ function draw_boss(n)
 		------------------------------
 		
 		-----triggers cutscene-------
-			--if not(boss1.hp>0) then
-			--		scene.number=3
-			--		scene.running=true
-			--end
+		if not(boss1.hp>0) then
+				scene.number=3
+				scene.running=true
+		end
 	
 	end
 end
@@ -845,9 +850,25 @@ scene1={
 		}
 }
 	
-scene2={}
-scene3={}
+scene2={
+
+}
+
+scene3={
+	dialog1={
+			txt={"ultimas palabras?"},
+ 	 dur=500,
+ 	 author=player
+		},
+		dialog2={
+			txt={"hehe", "creo que estas bajo la impresion de haberme derrotado", "no es cierto?"},
+ 	 dur=500,
+ 	 author=boss
+		}
+}
+
 scene4={}
+
 scene5={}
 
 
@@ -880,35 +901,42 @@ function draw_scene(n)
 		--showmsg("hola", 1)
 		
 		if (scene.timer==4990) then
-				addwind(4*8, 12*8, 48, 20, scene1.dialog1.txt, "player")
-		elseif(scene.timer==4900 or btnp(❎)) then
+				addwind(3*8, 12*8, 58, 20, scene1.dialog1.txt, "player")
+		elseif(scene.timer==4800 or btnp(❎)) then
 				del( wind, wind[1] )
-				addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt, "boss") 			
-		elseif(scene.timer==4880) then
+				addwind(3*8, 12*8, 48, 20, scene1.dialog2.txt, "boss") 			
+		elseif(scene.timer==4780) then
 				--addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt)
 		end
 		------------------------------
-		
-		print(scene.timer, 13*8, 24, 8)
-		
+				
 		if(btnp(🅾️)) scene.timer=1
 	
 	elseif(n==2) then --player death
 	
 		--map(32, 0, 0, 0, 16, 16)
 		
-		
-		if(btnp(🅾️)) scene.timer=1
+	 print('has muerto', 6*8-2, 8*8)
 	
 	elseif(n==3) then --boss1 defeat
 		
 		map(32, 0, 0, 0, 16, 16)
+		
+		---------dialogs--------------	
+		if (scene.timer==4990) then
+				addwind(3*8, 12*8, 88, 30, scene3.dialog1.txt, "player")
+		elseif(scene.timer==4800 or btnp(❎)) then
+				del( wind, wind[1] )
+				addwind(3*8, 12*8, 88, 30, scene3.dialog2.txt, "boss") 			
+		elseif(scene.timer==4780) then
+				--addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt)
+		end
+		------------------------------
+		
 		--dark knight--
  	sspr( 0, 96, 32, 32, 65, 2, 60, 60 )
  	--spear--------
  	sspr( 32, 96, 16, 16, 75, 70, 30, 60,true)
- 	
- 	if(btnp(🅾️)) scene.timer=1
 
 	elseif(n==4) then --boss1 second stage
 		
@@ -951,10 +979,13 @@ function draw_scene(n)
 				sspr( 56, 112, 8, 8, 100, 104, 15, 15)
 		----------------
 		
-		if(btnp(🅾️)) scene.timer=1
 		
 	end
 	
+	print('presiona z para saltear', 2*8, 0*8)
+	if(btnp(🅾️)) scene.timer=1
+	
+	print(scene.timer, 13*8, 24, 8)
 	drawind()
 
 end
@@ -1437,3 +1468,6 @@ a88080808080808080808080808080b800000000000000000000000000000000deefdededeefefef
 a88080806869806667804647804445b800000000000000000000000000000000efdeefefdeefefefffc0c0c0c0c0c0c000000000ffefefefefeffffffffffffefefefefe00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
 a89383807879807677805657805455b800000000000000000000000000000000efefefefefdedffdfdc0c0c0c0c0c0c000000000dedeefdedeefefefefffeeeeeeeeeeee00000000cec0c0c0dfdfdfdfdfdfdfdfc0c0c0ce00000000000000000000000000000000000000000000000000000000000000000000000000000000
 b5b7b7b7b7b7b7b7b7b7b7b7b7b7b7b600007500000000000000000000000000efefefefefc0dfdffdc0c0c0c0c0c0c000000000efefdeefefefefefefffcfcfcfcfcfcf00000000cececececececececececececececece00000000000000000000000000000000000000000000000000000000000000000000000000000000
+__sfx__
+010f00001a11526115231001f2001f2001f2001f2001f2001f2001b3001b3001b3001b3001b3001f2001f2002020012100231001d4001d4001d4001d4001d4002310022700227002270006400156001560022b00
+00030000205051c5051950513555145501655018550195501b5501c55019550177501475013750107500b750087001c0500670020050146001460000000000000000000000000000000000000000000000000000
