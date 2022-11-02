@@ -9,6 +9,17 @@ wpns = {}  	-- list of weapons
 wind = {}   -- list of text windows
 blood = {}
 
+mobs = {
+ goblins= {
+ 	alive= {},
+ 	dead= 0,
+ },
+ slimes= {
+ 	alive= {},
+ 	dead= 0,
+ },
+}
+
 scene= {
 	number=1,
 	running=true,
@@ -576,7 +587,109 @@ function damage(a, dx, dy)
 end
 ]]
 -->8
---bosses
+--mobs and bosses
+
+function spawn_goblins(maxg)
+	
+	goblin={
+		name="goblin a",
+	 x=14,
+	 y=3,
+	 dx=0,
+	 dy=0,
+	 d="idle",
+  sh=1,
+  sw=1,
+  --------------
+  bounce=2,
+  -- half-width and half-height
+		-- slightly less than 0.5 so
+		-- that will fit through 1-wide
+		-- holes.
+		w=0.5,
+		h=0.5,
+  -------------
+  f=0,
+  hp=5, --5
+  dmg=1,
+  dmg_cooldown=0,
+  blood_color=3,
+  anims={
+	  idle={fr=1,79},
+			walking={fr=2,94,95},
+  }
+ }
+ 
+ add(actor, goblin)
+ add(mobs.goblins.alive, goblin)
+	
+end
+
+function draw_goblin()
+
+	for g in all(mobs.goblins.alive) do
+		
+		ac=0.1 -- acceleration
+		
+		if not solid_a(g, g.dx, 0) then
+			g.x += g.dx
+		else
+			g.dx *= -g.bounce
+		end
+
+		if not solid_a(g, 0, g.dy) then
+			g.y += g.dy
+		else
+			g.dy *= -g.bounce
+		end
+		
+		----------------------------
+		----------------------------
+		golbin_ia()
+		----------------------------
+		----------------------------
+		
+		-- friction (lower for more)
+		g.dx *=.3
+		g.dy *=.3
+	
+		spd=sqrt(g.dx*g.dx+g.dy*g.dy)
+		g.f= (g.f+spd*2) % g.anims[g.d].fr 
+		if (spd < 0.05) f=0
+	
+		------------cooldowns----------
+		if(g.cooldown.attack1!=0) g.cooldown.attack1=g.cooldown.attack1-1
+		if(g.dmg_cooldown!=0) g.dmg_cooldown=g.dmg_cooldown-1
+		-------------------------------
+	
+		--------draw sprite------------
+		if (g.hp>0) then
+			spr(g.anims[g.d][2+(flr(g.f))],
+	 		g.x*8-4,g.y*8-4, -- x,y (pixels)
+	 		2,2,g.d=="walkright"    -- w,h, flip
+			)	
+		else
+			spr(192,
+	 		g.x*8-4,g.y*8-4, -- x,y (pixels)
+	 		4,4,g.d=="walkright"    -- w,h, flip
+			)
+		end
+		-------------------------------		
+	
+		-----------draw blood--------
+		--if (hptrack.boss!=boss1.hp and boss1.hp>0) then
+		--			add_blood(boss1)
+		--			hptrack.boss=boss1.hp
+		--end	
+		-----------------------------
+		
+	end
+
+end
+
+function goblin_ia()
+
+end
 
 function spawn_boss(n)
 
@@ -900,39 +1013,40 @@ translator={
 }
 
 function draw_scene(n)
-	----prueba de escenas-------
-	--[[
-		cls()
-		map(52, 0, 0, 0, 16, 16)
-		addwind(0*8, 0*8, 48, 20, {"linea1", "linea2"})
-	]]
 
 	if(n==1) then     --opening scene
-	
-			
-		map(52, 0, 0, 0, 16, 16)
 		
-		if (scene.timer<=4990) then
-		--ojos jefe
-			local aux = scene.timer-4990
-			local extra = ((aux)/(1000/aux))
-			--print(aux,6*8-2, 8*8)
+		local aux = (scene.timer-4990)/3 -- era (scene.timer-4990)
+		local extra = ((aux)/(1000/aux))
+		
+		map(52, 0, 0, 0, 16, 16)
+		--[[
+		local aux = scene.timer-4990
+		local extra = ((aux)/(1000/aux))
+		
+		
+		
+		if (scene.timer<=4990 and extra<15) then
+		
 		 print(extra,6*8-2, 8*8)
 		 if(extra<15)then
-			 if(extra+2>=8) then
-					extra=6
-				end
-						sspr( 120, 104, 8, 8, 56, 16, (2+extra), (2+extra) )
-					 sspr( 120, 104, 8, 8, 72, 16, (2+extra), (2+extra) )
+		 
+			 	if(extra+2>=8) then
+						extra=6
+					end
+					--ojos del jefe
+					sspr( 120, 104, 8, 8, 56, 16, (2+extra), (2+extra) )
+					sspr( 120, 104, 8, 8, 72, 16, (2+extra), (2+extra) )
 					if(extra+2>=8) then
 						sspr( 120, 104, 8, 8, 64, 16, (2+extra), (2+extra) )
 						sspr( 120, 104, 8, 8, 64, 24, (2+extra), (2+extra) )
 					end
+					
 				end
 
-		elseif (btnp(❎) and (extra>=15)) then
-			sspr( 96, 96, 16, 16, 64, 16, 64, 64 )
-		end
+		elseif (extra>=15) then
+			sspr( 96, 96, 16, 16, 50, 8, 64, 64 )
+		end]]
 		
 		---------dialogs--------------
 		--addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
@@ -941,19 +1055,44 @@ function draw_scene(n)
 
 		if (scene.timer==4990) then
 				addwind(3*8-5, 12*8, 91, 30, scene1.dialog1.txt, "player")
-		elseif(btnp(❎) and scene.xcounter==0) then
+		elseif(scene.xcounter==1) then
 				del( wind, wind[1] )
-				scene.xcounter=1
-				addwind(3*8-5, 12*8, 91, 30, scene1.dialog2.txt, "boss") 			
-		elseif(btnp(❎) and scene.xcounter==1) then
+				addwind(3*8-5, 12*8, 91, 30, scene1.dialog2.txt, "boss")
+				
+				
+				
+				print(extra,6*8-2, 8*8)
+				
+				if(extra<15)then
+		 
+			 	if(extra+2>=8) then
+						extra=6
+					end
+					--ojos del jefe
+					sspr( 120, 104, 8, 8, 56, 16, (2+extra), (2+extra) )
+					sspr( 120, 104, 8, 8, 72, 16, (2+extra), (2+extra) )
+					if(extra+2>=8) then
+						sspr( 120, 104, 8, 8, 64, 16, (2+extra), (2+extra) )
+						sspr( 120, 104, 8, 8, 64, 24, (2+extra), (2+extra) )
+					end
+				
+				elseif(extra>=15) then
+						--jefe
+						sspr( 96, 96, 16, 16, 50, 8, 64, 64 )
+				end
+				 			
+		elseif(scene.xcounter==2) then
+				--jefe
+				sspr( 96, 96, 16, 16, 50, 8, 64, 64 )
 				del( wind, wind[1] )
 				addwind(3*8-5, 12*8, 91, 30, scene1.dialog3.txt, "boss")	
-				scene.xcounter=2
-		elseif((btnp(❎) and scene.xcounter==2)) then
+		elseif(scene.xcounter==3) then
 				scene.timer=1
 		end 
 		------------------------------
-	
+		
+		
+		print(extra,6*8-2, 8*8)
 		
 	elseif(n==2) then --player death
 		
@@ -971,18 +1110,13 @@ function draw_scene(n)
 		if (scene.timer==4950) then
 			--dialogo (patetico)
 				addwind(3*8-5, 12*8, 91, 30, scene2.dialog1.txt, "boss")
-		elseif(scene.timer==4840 or btnp(❎)) then
-			--efecto (slash)
+		elseif(scene.xcounter>=1) then
+			--efecto (slash+cabeza callendo/rodando)
 				cls()
-				scene.xcounter=3
-				del( wind, wind[1] )
-				print('efecto slash', 6*8-2, 8*8)
-				--scene.xcounter=1
-		elseif(scene.timer==4790) then
-			--sonido (cabeza callendo/rodando)
-					print('cabeza', 6*8-2, 8*8)
-		elseif(scene.timer<4750) then
-			--pantalla de muerte
+				del(wind, wind[1])
+				
+				sfx()
+				
 				print('has muerto', 6*8-2, 8*8)
 				print('presiona z para seguir sufriendo', 2*8-16, 9*8)
 		end
@@ -996,10 +1130,10 @@ function draw_scene(n)
 		---------dialogs--------------	
 		if (scene.timer==4990) then
 				addwind(3*8-5, 12*8, 91, 30, scene3.dialog1.txt, "player")
-		elseif(scene.timer==4800 or btnp(❎)) then
+		elseif(scene.xcounter==1) then
 				del( wind, wind[1] )
 				addwind(3*8-5, 12*8, 91, 30, scene3.dialog2.txt, "boss") 			
-		elseif(scene.timer==4780) then
+		elseif(scene.xcounter==2) then
 				--addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt)
 		end
 		------------------------------
@@ -1055,6 +1189,7 @@ function draw_scene(n)
 	
 	if(player.hp>0) print('presiona z para saltear', 2*8, 0*8)
 	if(btnp(🅾️) and scene.timer<4990) scene.timer=1
+	if(btnp(❎) and scene.timer<4990) scene.xcounter+=1
 	
 	print(scene.timer, 13*8, 24, 8)
 	drawind()
