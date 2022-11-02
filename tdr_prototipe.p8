@@ -914,15 +914,24 @@ function draw_scene(n)
 		
 		if (scene.timer<=4990) then
 		--ojos jefe
-			for cont=8,100 do
-				sspr( 120, 104, 8, 8, 64, 16, cont*0.1, cont*0.1 )
-				sspr( 120, 104, 8, 8, 56, 16, cont*0.1, cont*0.1 )
-				sspr( 120, 104, 8, 8, 72, 16, cont*0.1, cont*0.1 )
-				sspr( 120, 104, 8, 8, 64, 24, cont*0.1, cont*0.1 )
-			end
-			
-		elseif (btnp(❎) and (scene.timer<=4900)) then
-			sspr( 96, 96, 16, 16, 64, 16, 16, 16 )
+			local aux = scene.timer-4990
+			local extra = ((aux)/(1000/aux))
+			--print(aux,6*8-2, 8*8)
+		 print(extra,6*8-2, 8*8)
+		 if(extra<15)then
+			 if(extra+2>=8) then
+					extra=6
+				end
+						sspr( 120, 104, 8, 8, 56, 16, (2+extra), (2+extra) )
+					 sspr( 120, 104, 8, 8, 72, 16, (2+extra), (2+extra) )
+					if(extra+2>=8) then
+						sspr( 120, 104, 8, 8, 64, 16, (2+extra), (2+extra) )
+						sspr( 120, 104, 8, 8, 64, 24, (2+extra), (2+extra) )
+					end
+				end
+
+		elseif (btnp(❎) and (extra>=15)) then
+			sspr( 96, 96, 16, 16, 64, 16, 64, 64 )
 		end
 		
 		---------dialogs--------------
@@ -959,10 +968,10 @@ function draw_scene(n)
 			--------------------
 		end
 		--------------------
-		if (scene.timer==4990) then
+		if (scene.timer==4950) then
 			--dialogo (patetico)
 				addwind(3*8-5, 12*8, 91, 30, scene2.dialog1.txt, "boss")
-		elseif(scene.timer==4890 or btnp(❎)) then
+		elseif(scene.timer==4840 or btnp(❎)) then
 			--efecto (slash)
 				cls()
 				scene.xcounter=3
@@ -1518,7 +1527,7 @@ a58182a7a7a7a7a0a1a7a7a7a78586a600000000000000000000000000000000c0c0c0c0c0c0c0c0
 a89192808080808080808080809596b800000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c000000000cfcececfc0c0c0c0c0c0c0ceeeeeeeee00000000cefefefeeeeefececfcfcfcfcfcfcfce000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
 a88080808080808080808080808080b800000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c000000000eecfcfcecfc0c0c0c0c0c0c0fefeeefe00000000cefefefeeeeefececfcfcfcfcfcfcfce000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
 a88080808080808080808080808080b800000000000000000000000000000000c0c0c0dfdfc0c0c0c0c0c0c0c0c0c0c000000000eeeeeecfcecfc0c0c0c0c0c0eeeecfcf00000000cefefefeeeeefececfcfcfcfcfcfcfce000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
-a88080805f80808080808080808080b800000000000000000000000000000000c0c0dfdfdfc0c0c0c0c0c0c0c0c0c0c000000000fefeeecfcfcecec0c0c0c0c0fecfcecf00000000cefefefeeeeefececfcfcfcfcfcfcfce000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
+a88080808080808080808080808080b800000000000000000000000000000000c0c0dfdfdfc0c0c0c0c0c0c0c0c0c0c000000000fefeeecfcfcecec0c0c0c0c0fecfcecf00000000cefefefeeeeefececfcfcfcfcfcfcfce000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
 a88080808080808080808080808080b800000000000000000000000000000000c0dfdfffffc0c0c0c0c0c0c0c0c0c0c000000000eeeeeecfdfdfcec0c0c0c0cfcfcecfee00000000ceeeeeeeeeeeeececfcfcfcfcfcfcfce000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
 a88080808080808080808080808080b800000000000000000000000000000000dedfefefefffc0c0c0c0c0c0c0c0c0c000000000eefefedfdfdfcecec0cecfcececfeefe00000000ceeeeeeeeeeeeececfcfcfcfcfcfcfce000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
 a88080808080808080808080808080b800000000000000000000000000000000dfefefefefefefc0cfcfcfcfcfcfcfc000000000cecedfdfffffcececececececececece00000000cefefefefefefececfcfcfcfcfcfcfce000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0dfdfdfdfdfdfc0c0
