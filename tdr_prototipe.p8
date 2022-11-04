@@ -25,7 +25,9 @@ scene= {
 	running=true,
 	timer=5000,
 	xcounter=0,
-	auxcounter=0
+	auxcounter=0,
+	auxbool=false,
+	auxcount=-1
 } -- keeps track of scenes playing at the moment
 
 boss={ 					-- keeps track of the boss on screen
@@ -214,7 +216,18 @@ function _draw()
  		elseif(boss.alive==true) then
  				draw_boss(boss.number)
  				draw_boss_weapon(boss.number) 	 
- 		end					
+ 		end	
+ 		
+ 		-- create & draw the goblin
+ 		if ((#mobs.goblins.alive+mobs.goblins.dead)<=4) then
+ 				--boss.number=boss.number+1
+ 				spawn_goblins(4)
+ 				draw_goblin()
+ 				--boss.alive=true
+ 		--elseif(boss.alive==true) then
+ 				--draw_boss(boss.number)
+ 				--draw_boss_weapon(boss.number) 	 
+ 		end				
 	
 			draw_weapon()
 	
@@ -590,11 +603,13 @@ end
 --mobs and bosses
 
 function spawn_goblins(maxg)
-	
+	local coso = (#mobs.goblins.alive)+(mobs.goblins.dead)
+	print(coso,6*8-2, 8*8)
+	if(maxg>(#mobs.goblins.alive)+(mobs.goblins.dead)) then
 	goblin={
 		name="goblin a",
 	 x=14,
-	 y=3,
+	 y=7,
 	 dx=0,
 	 dy=0,
 	 d="idle",
@@ -622,7 +637,7 @@ function spawn_goblins(maxg)
  
  add(actor, goblin)
  add(mobs.goblins.alive, goblin)
-	
+	end
 end
 
 function draw_goblin()
@@ -645,7 +660,7 @@ function draw_goblin()
 		
 		----------------------------
 		----------------------------
-		golbin_ia()
+		goblin_ia()
 		----------------------------
 		----------------------------
 		
@@ -658,21 +673,28 @@ function draw_goblin()
 		if (spd < 0.05) f=0
 	
 		------------cooldowns----------
-		if(g.cooldown.attack1!=0) g.cooldown.attack1=g.cooldown.attack1-1
+		--if(g.cooldown.attack1!=0) g.cooldown.attack1=g.cooldown.attack1-1
 		if(g.dmg_cooldown!=0) g.dmg_cooldown=g.dmg_cooldown-1
 		-------------------------------
 	
 		--------draw sprite------------
 		if (g.hp>0) then
-			spr(g.anims[g.d][2+(flr(g.f))],
+			spr(g.anims[g.d][1+(flr(g.f))],
 	 		g.x*8-4,g.y*8-4, -- x,y (pixels)
-	 		2,2,g.d=="walkright"    -- w,h, flip
+	 		1,1,g.d=="walking"    -- w,h, flip
 			)	
 		else
+		del(mobs.goblins.alive,g)
+		del(actor,g)
+		
+		mobs.goblins.dead+=1
+			--sprite cadaver goblin-------
+			--[[
 			spr(192,
 	 		g.x*8-4,g.y*8-4, -- x,y (pixels)
 	 		4,4,g.d=="walkright"    -- w,h, flip
 			)
+			]]
 		end
 		-------------------------------		
 	
@@ -689,6 +711,55 @@ end
 
 function goblin_ia()
 
+	for g in all(mobs.goblins.alive) do
+	
+		if(flr(g.x)!=flr(player.x))then
+			if(
+			(flr(g.x)<flr(player.x)) 
+			and 
+			((flr(player.x)-flr(g.x))>1)
+			)then										
+					g.dx+= ac
+					g.d= "walking"					
+			elseif(
+			(flr(g.x)>flr(player.x)) 
+			and 
+			((flr(g.x)-flr(player.x))>1)
+			) then
+					g.dx-= ac
+					g.d= "walking"
+			else --is in the right position and distance for atack
+					if (sword.cooldown==0) then
+							sword_attack()
+							sword.cooldown=10
+					end	
+			end
+	elseif(flr(g.y)!=flr(player.y)) then
+			if(
+			(flr(g.y)<flr(player.y)) 
+			and 
+			((flr(player.y)-flr(g.y))>1)
+			)then
+					g.dy+= ac
+					g.d= "walking"
+			elseif(
+			(flr(g.y)>flr(player.y)) 
+			and 
+			((flr(g.y)-flr(player.y))>1)
+			) then
+					g.dy-= ac 
+					g.d= "walking"
+			else
+					if (sword.cooldown==0) then
+							sword_attack()
+							sword.cooldown=10
+					end
+			end 
+	end
+	
+	end
+	--if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
+	
 end
 
 function spawn_boss(n)
@@ -823,6 +894,7 @@ function draw_boss(n)
 		
 		-----triggers cutscene-------
 		if not(boss1.hp>0) then
+				scene.timer=5000
 				scene.number=3
 				scene.running=true
 		end
@@ -992,7 +1064,12 @@ scene3={
  	 author=player
 		},
 		dialog2={
-			txt={"hehe", "creo que estas bajo la impresion de haberme derrotado", "no es cierto?"},
+			txt={"hehe.. creo que estas", "bajo la impresion de","haberme derrotado..."},
+ 	 dur=500,
+ 	 author=boss
+		},
+		dialog3={
+			txt={"no soy tan debil","como crees..."},
  	 dur=500,
  	 author=boss
 		}
@@ -1020,33 +1097,6 @@ function draw_scene(n)
 		local extra = ((aux)/(1000/aux))
 		
 		map(52, 0, 0, 0, 16, 16)
-		--[[
-		local aux = scene.timer-4990
-		local extra = ((aux)/(1000/aux))
-		
-		
-		
-		if (scene.timer<=4990 and extra<15) then
-		
-		 print(extra,6*8-2, 8*8)
-		 if(extra<15)then
-		 
-			 	if(extra+2>=8) then
-						extra=6
-					end
-					--ojos del jefe
-					sspr( 120, 104, 8, 8, 56, 16, (2+extra), (2+extra) )
-					sspr( 120, 104, 8, 8, 72, 16, (2+extra), (2+extra) )
-					if(extra+2>=8) then
-						sspr( 120, 104, 8, 8, 64, 16, (2+extra), (2+extra) )
-						sspr( 120, 104, 8, 8, 64, 24, (2+extra), (2+extra) )
-					end
-					
-				end
-
-		elseif (extra>=15) then
-			sspr( 96, 96, 16, 16, 50, 8, 64, 64 )
-		end]]
 		
 		---------dialogs--------------
 		--addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
@@ -1058,11 +1108,7 @@ function draw_scene(n)
 		elseif(scene.xcounter==1) then
 				del( wind, wind[1] )
 				addwind(3*8-5, 12*8, 91, 30, scene1.dialog2.txt, "boss")
-				
-				
-				
-				print(extra,6*8-2, 8*8)
-				
+							
 				if(extra<15)then
 		 
 			 	if(extra+2>=8) then
@@ -1134,7 +1180,12 @@ function draw_scene(n)
 				del( wind, wind[1] )
 				addwind(3*8-5, 12*8, 91, 30, scene3.dialog2.txt, "boss") 			
 		elseif(scene.xcounter==2) then
-				--addwind(4*8, 12*8, 48, 20, scene1.dialog2.txt)
+				del( wind, wind[1] )
+				addwind(3*8-5, 12*8, 91, 30, scene3.dialog3.txt, "boss")
+		elseif(scene.xcounter==3) then
+				del( wind, wind[1] )
+				scene.timer=5000
+				scene.number=4
 		end
 		------------------------------
 		
@@ -1146,8 +1197,28 @@ function draw_scene(n)
 
 	elseif(n==4) then --boss1 second stage
 		
-		map(72, 0, 0, 0, 16, 16)
+		local aux = (scene.timer-4990)/3 -- era (scene.timer-4990)
+		local extra = ((aux)/(1000/aux))	
+		--print(extra,6*8-2, 8*8)
+		--------------------------
+		--local prueba
+		--local contp = -1
+		if(scene.auxcount < 20) then
+			scene.auxcount+=1
+		elseif(scene.auxcount<=20 and scene.auxcount>=17)then
+			if(scene.auxbool==true) then
+				scene.auxbool=false
+			elseif(scene.auxbool==false) then
+				scene.auxbool=true 
+			end
+		 scene.auxcount=-1
+		end
+		print(scene.auxbool,6*8-2, 8*8)
+		print(scene.auxcount,6*8-2, 8*9)
+		--------------------------
 		
+		if(scene.timer<=4990 and scene.timer>4940) then
+		map(72, 0, 0, 0, 8, 9)
 		--first panel--
 			
 			--sword---
@@ -1157,34 +1228,50 @@ function draw_scene(n)
 			--helmet--		
 				sspr( 80, 96, 16, 16, 8, 6, 40, 40,true )
 			
+			--[[
 			--tears---
 				sspr( 96, 120, 8, 8, 10, 15, 10, 5)
 				sspr( 96, 120, 8, 8, 40, 35, 10, 5)
 				sspr( 96, 120, 8, 8, 8, 59, 48, 5)
-
-		--second panel--
+			]]
+		elseif(scene.timer<=4940 and scene.timer>4850) then
+			map(79, 0, 56, 0, 9, 9)
+			--second panel--
 			
 			--body--
 				sspr( 80, 112, 16, 16, 62, 2, 60, 60)
 			
 			--sword edges--
 				--sspr( 48, 96, 8, 8, 58, 50, 15, 15)
-				sspr( 56, 96, 8, 8, 115, 40, 15, 15)
-				sspr( 56, 104, 8, 8, 58, 45, 15, 15)
-				sspr( 56, 112, 8, 8, 74, 52, 15, 15)
+				sspr( 56, 96, 8, 8, 115, 40-(extra*6), 15, 15)
+				sspr( 56, 104, 8, 8, 58, 45-(extra*8), 15, 15)
+				sspr( 56, 112, 8, 8, 74, 52-(extra*6), 15, 15)
 
+		elseif(scene.timer<=4850 and scene.timer>4720) then
+		map(72, 8, 0, 64, 16, 8)
 		--third panel--
 			
 			--face----------
 				sspr( 64, 96, 16, 16, 40, 74, 45, 45)
 			
+			if(scene.auxbool==true) then
 			--sword edges---
-				sspr( 48, 96, 8, 8, 20, 74, 15, 15)
-				sspr( 56, 96, 8, 8, 95, 74, 15, 15)
-				sspr( 56, 104, 8, 8, 10, 94, 15, 15)
-				sspr( 56, 112, 8, 8, 100, 104, 15, 15)
-		----------------
-		
+				sspr( 48, 96, 8, 8, 20, 74-(extra-(extra+1.5)), 15, 15)
+				sspr( 56, 96, 8, 8, 95, 74-(extra-(extra+1.25)), 15, 15)
+				sspr( 56, 104, 8, 8, 10, 94-(extra-(extra+1)), 15, 15)
+				sspr( 56, 112, 8, 8, 100, 104-(extra-(extra+1.5)), 15, 15)
+			----------------
+			elseif(scene.auxbool==false)  then
+			--sword edges---
+				sspr( 48, 96, 8, 8, 20, 74+(extra-(extra+1.5)), 15, 15)
+				sspr( 56, 96, 8, 8, 95, 74+(extra-(extra+1.25)), 15, 15)
+				sspr( 56, 104, 8, 8, 10, 94+(extra-(extra+1)), 15, 15)
+				sspr( 56, 112, 8, 8, 100, 104+(extra-(extra+1.5)), 15, 15)
+			----------------
+			end
+		elseif(scene.timer<=4720) then
+			scene.timer=1
+		end
 	end
 	
 	if(player.hp>0) print('presiona z para saltear', 2*8, 0*8)
@@ -1609,11 +1696,11 @@ __gfx__
 000000000000000000000000000000000000000006555565555555605555556555565560777777702222222222222222117a7112112521122562665225662652
 000000000000000000000000000000000000000060655565555556065555556566665560bbbbbbb777171772771717727998aa72712521722566265225626652
 600000000000000600000000088888000000000056065565555560655555556555565560bbbbbbb77111a172716461721199a112112521122562665225662652
-600000000000000600000000888998800000000055606666666606556666666655565560bbbbbbb7111611121116111271191172712521722566265225626652
-56000000000000650000000089999990000000005556065555606555555655555556666077777770715551727166617277191772771217722562665225662652
-560000000000006500000000899999990000000055566065560665555556555555565560000000001155511216bbb61222222222222222222566265225626652
-66600000000006660000000009909999000000005556560660656666666666665556556000000000715551727166617200000000000000002562665225662652
-0000000000000000000000000900899aa0000000555655600655655500000000555655600000000077171772771717720000000000000000256626520269a620
+600000000000000600b00000888998800000000055606666666606556666666655565560bbbbbbb7111611121116111271191172712521722566265225626652
+56000000000000658bb8448889999990000000005556065555606555555655555556666077777770715551727166617277191772771217722562665225662652
+56000000000000658bb444bb899999990000000055566065560665555556555555565560000000001155511216bbb61222222222222222222566265225626652
+6660000000000666b884bb8809909999000000005556560660656666666666665556556000000000715551727166617200000000000000002562665225662652
+0000000000000000088888800900899aa0000000555655600655655500000000555655600000000077171772771717720000000000000000256626520269a620
 007ccc00000000000000000000099aa999000000555655600655655500000000065565550777777700000a0a02222222222222222222000025626652a09b7a0a
 07ccccc0007ccc000000000000899a9448990000666656066065655566666666065565557bbbbbbb00000092255555555555555555552200256626520993b990
 0cccccc007ccccc00000000000800f9488490000555660655606655555556555065565557bbbbbbb0000009966666666666666666666552025626652a009900a
@@ -1634,7 +1721,7 @@ __gfx__
 0000004000000fffffff222e0000000000077928900000001180000000000080eee2f82ff28f2eee000001000000000088821165151112884444444488888888
 0000004500000f0ff0ff2f2e0000000000007799900000002218000000800828ee22ffffffff2eee000001100000000088821152511112884444444488888888
 0000054500000f0ff0fffa2e0000000000000790990000002218000008008528ee29ffffffff92ee000001000000000008211515251511284444444488888888
-0000054500000ecffcef2aeee000000000009900099000001121880008886528ee22fff88fff22ee000000000000000008211211156211284444444488888888
+0000054500000effffef2aeee000000000009900099000001121880008886528ee22fff88fff22ee000000000000000008211211156211284444444488888888
 000f054500000ff88ff2eeeee000000000000000009900008112158000826580ee212ffffff212ee000000000000000000255821112855284444444488888888
 00aaf4440ff0000ff22e11eee000000000000000000990000811555800886580222112ffff2112e2000000000000000000822821212822804444444488888888
 00faaaaaa55511111111111eee000000000000000000990000855580000888002211111111111122000000000000000000088211211288004444444488888888
@@ -1655,7 +1742,7 @@ __gfx__
 050055255ff5fffff5fff5ffff0000000000000000000000000000000000000000088821812888000088882181288880ccccccccffffffff55555555aaaaaaaa
 066505550fff5ffffffffff00f0000000000000000000000000000000000000000000811811800000008881181188800ccccccccffffffff55555555aaaaaaaa
 __gff__
-0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000020000000000000000000000
+0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000002020000000200000000000000000000000000000000020000000000000000000000
 0000020200000000000000000000000200020202000202000000000000000006020200000000000202000000000002000202000000000002020000000202020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
 __map__
 a58182a7a7a7a7a0a1a7a7a7a78586a600000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c000000000fecfcffececececec0c0ceceeefefefe00000000cececececececececececececececece000000000000000000000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
