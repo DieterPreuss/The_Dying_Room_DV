@@ -602,6 +602,176 @@ end
 -->8
 --mobs and bosses
 
+function spawn_mobs()
+
+	if(#mobs.slimes.alive==0 and #mobs.slimes.alive==0)
+
+	elseif() then
+
+	end
+
+end
+
+function spawn_slime(maxg)
+	local coso = (#mobs.slimes.alive)+(mobs.slimes.dead)
+	print(coso,6*8-2, 8*8)
+	if(maxg>(#mobs.slimes.alive)+(mobs.slimes.dead)) then
+	slime={
+		name="goblin a",
+	 x=14,
+	 y=7,
+	 dx=0,
+	 dy=0,
+	 d="idle",
+  sh=1,
+  sw=1,
+  --------------
+  bounce=2,
+  -- half-width and half-height
+		-- slightly less than 0.5 so
+		-- that will fit through 1-wide
+		-- holes.
+		w=0.5,
+		h=0.5,
+  -------------
+  f=0,
+  hp=5, --5
+  dmg=1,
+  dmg_cooldown=0,
+  blood_color=3,
+  anims={
+	  idle={fr=1,178},
+			walking={fr=3,78,77,76},
+  }
+ }
+ 
+ add(actor, slime)
+ add(mobs.slime.alive, slime)
+	end
+end
+
+function draw_slime()
+
+	for s in all(mobs.slime.alive) do
+		
+		ac=0.1 -- acceleration
+		
+		if not solid_a(s, s.dx, 0) then
+			s.x += s.dx
+		else
+			s.dx *= -s.bounce
+		end
+
+		if not solid_a(s, 0, s.dy) then
+			s.y += s.dy
+		else
+			s.dy *= -s.bounce
+		end
+		
+		----------------------------
+		----------------------------
+		slime_ia()
+		----------------------------
+		----------------------------
+		
+		-- friction (lower for more)
+		s.dx *=.3
+		s.dy *=.3
+	
+		spd=sqrt(s.dx*s.dx+s.dy*s.dy)
+		s.f= (s.f+spd*2) % s.anims[s.d].fr 
+		if (spd < 0.05) f=0
+	
+		------------cooldowns----------
+		--if(g.cooldown.attack1!=0) g.cooldown.attack1=g.cooldown.attack1-1
+		if(s.dmg_cooldown!=0) s.dmg_cooldown=s.dmg_cooldown-1
+		-------------------------------
+	
+		--------draw sprite------------
+		if (s.hp>0) then
+			spr(s.anims[s.d][1+(flr(s.f))],
+	 		s.x*8-4,s.y*8-4, -- x,y (pixels)
+	 		1,1,s.d=="walking"    -- w,h, flip
+			)	
+		else
+		del(mobs.slimes.alive,s)
+		del(actor,s)
+		
+		mobs.slimes.dead+=1
+			--sprite cadaver goblin-------
+			--[[
+			spr(192,
+	 		g.x*8-4,g.y*8-4, -- x,y (pixels)
+	 		4,4,g.d=="walkright"    -- w,h, flip
+			)
+			]]
+		end
+		-------------------------------		
+	
+		-----------draw blood--------
+		--if (hptrack.boss!=boss1.hp and boss1.hp>0) then
+		--			add_blood(boss1)
+		--			hptrack.boss=boss1.hp
+		--end	
+		-----------------------------
+		
+	end
+
+end
+
+function slime_ia()
+
+	for s in all(mobs.slimes.alive) do
+	
+		if(flr(s.x)!=flr(player.x))then
+			if(
+			(flr(s.x)<flr(player.x)) 
+			and 
+			((flr(player.x)-flr(s.x))>1)
+			)then										
+					s.dx+= ac
+					s.d= "walking"					
+			elseif(
+			(flr(s.x)>flr(player.x)) 
+			and 
+			((flr(s.x)-flr(player.x))>1)
+			) then
+					s.dx-= ac
+					s.d= "walking"
+			else --is in the right position and distance for atack
+					if (sword.cooldown==0) then
+							sword_attack()
+							sword.cooldown=10
+					end	
+			end
+	elseif(flr(s.y)!=flr(player.y)) then
+			if(
+			(flr(s.y)<flr(player.y)) 
+			and 
+			((flr(player.y)-flr(s.y))>1)
+			)then
+					s.dy+= ac
+					s.d= "walking"
+			elseif(
+			(flr(s.y)>flr(player.y)) 
+			and 
+			((flr(s.y)-flr(player.y))>1)
+			) then
+					s.dy-= ac 
+					s.d= "walking"
+			else
+					if (sword.cooldown==0) then
+							sword_attack()
+							sword.cooldown=10
+					end
+			end 
+	end
+	
+	end
+	--if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
+	
+end
+
 function spawn_goblins(maxg)
 	local coso = (#mobs.goblins.alive)+(mobs.goblins.dead)
 	print(coso,6*8-2, 8*8)
