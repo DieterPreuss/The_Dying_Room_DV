@@ -1091,7 +1091,7 @@ translator={
 
 function draw_scene(n)
 
-	if(n==1) then     --opening scene
+	if(n==1) then     --boss1 entering scene
 		
 		local aux = (scene.timer-4990)/3 -- era (scene.timer-4990)
 		local extra = ((aux)/(1000/aux))
@@ -1272,6 +1272,21 @@ function draw_scene(n)
 		elseif(scene.timer<=4720) then
 			scene.timer=1
 		end
+		
+	elseif(n==5) then --intro
+		
+		map()
+		
+		if(scene.timer<=4990 and scene.timer>4940) then
+		
+		elseif(scene.timer<4940) then
+				addwind(3*8-5, 12*8, 91, 30, scene3.dialog1.txt, "player")
+		elseif(scene.xcounter==1) then
+				del( wind, wind[1] )
+				addwind(3*8-5, 12*8, 91, 30, scene3.dialog2.txt, "boss") 			
+		
+		end
+		
 	end
 	
 	if(player.hp>0) print('presiona z para saltear', 2*8, 0*8)
