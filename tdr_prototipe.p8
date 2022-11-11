@@ -155,11 +155,11 @@ function _init()
  }
  
  --create boss
- if (scene.running==false) then
- 	boss.number=boss.number+1
- 	spawn_boss(boss.number)
- 	boss.alive=true 	 
- end
+ --if (scene.running==false) then
+ --	boss.number=boss.number+1
+ --	spawn_boss(boss.number)
+ --	boss.alive=true 	 
+ --end
  
  hptrack={
  		player=8,
@@ -208,16 +208,18 @@ function _draw()
 				)
 			end
 			
+			spawn_mobs()
+			
 			-- create & draw the boss
- 		if (boss.alive==false) then
- 				boss.number=boss.number+1
- 				spawn_boss(boss.number)
- 				boss.alive=true
- 		elseif(boss.alive==true) then
+ 		--if (boss.alive==false) then
+ 		--		boss.number=boss.number+1
+ 		--		spawn_boss(boss.number)
+ 		--		boss.alive=true
+ 		if(boss.alive==true) then
  				draw_boss(boss.number)
  				draw_boss_weapon(boss.number) 	 
  		end	
- 		
+ 		--[[
  		-- create & draw the goblin
  		if ((#mobs.goblins.alive+mobs.goblins.dead)<=4) then
  				--boss.number=boss.number+1
@@ -227,7 +229,20 @@ function _draw()
  		--elseif(boss.alive==true) then
  				--draw_boss(boss.number)
  				--draw_boss_weapon(boss.number) 	 
- 		end				
+ 		end
+ 		
+ 		
+ 		-- create & draw the goblin
+ 		if ((#mobs.goblins.alive+mobs.goblins.dead)<=4) then
+ 				--boss.number=boss.number+1
+ 				spawn_slime(4)
+ 				draw_slime()
+ 				--boss.alive=true
+ 		--elseif(boss.alive==true) then
+ 				--draw_boss(boss.number)
+ 				--draw_boss_weapon(boss.number) 	 
+ 		end		
+ 		]]			
 	
 			draw_weapon()
 	
@@ -602,26 +617,57 @@ end
 -->8
 --mobs and bosses
 
-<<<<<<< Updated upstream
-=======
 function spawn_mobs()
 
-	if(#mobs.slimes.alive==0 and #mobs.slimes.alive==0)
-
-	elseif() then
+	if(mobs.slimes.dead<3 and scene.running==false) then	
 	
-	elseif() then
-
+			spawn_slime(3)			
+			
+	elseif(mobs.slimes.dead>=3 and mobs.slimes.dead<9 and scene.running==false) then
+			
+			spawn_slime(9)
+			
+	
+	elseif(mobs.slimes.dead==9 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
+	
+			spawn_goblins(2)
+			spawn_slime(17)
+			
+	elseif(mobs.goblins.dead==2 and mobs.slimes.dead==17 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
+	
+			spawn_goblins(8)
+			spawn_slime(18)
+	
+	elseif(mobs.goblins.dead==8 and mobs.slimes.dead==18 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
+	
+			spawn_goblins(18)
+	
+	elseif(mobs.goblins.dead==18 and mobs.slimes.dead==18 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then		
+			
+ 		-- create & draw the boss
+ 		if (boss.alive==false) then
+ 				boss.number=boss.number+1
+ 				spawn_boss(boss.number)
+ 				boss.alive=true
+ 		elseif(boss.alive==true) then
+ 				draw_boss(boss.number)
+ 				draw_boss_weapon(boss.number) 	 
+ 		end 
+			
 	end
+	
+	draw_goblin()
+	draw_slime()
 
 end
 
-function spawn_slime(maxg)
+function spawn_slime(maxs)
 	local coso = (#mobs.slimes.alive)+(mobs.slimes.dead)
 	print(coso,6*8-2, 8*8)
-	if(maxg>(#mobs.slimes.alive)+(mobs.slimes.dead)) then
+	if(maxs>((#mobs.slimes.alive)+(mobs.slimes.dead))) then
+	
 	slime={
-		name="goblin a",
+		name="slime a",
 	 x=14,
 	 y=7,
 	 dx=0,
@@ -639,24 +685,28 @@ function spawn_slime(maxg)
 		h=0.5,
   -------------
   f=0,
-  hp=5, --5
+  hp=2, --5
   dmg=1,
   dmg_cooldown=0,
   blood_color=3,
   anims={
 	  idle={fr=1,178},
-			walking={fr=3,78,77,76},
+			walking={fr=3,178,177,176},
   }
  }
  
+ slime.number=(#mobs.slimes.alive)+(mobs.slimes.dead)+1
+ 
  add(actor, slime)
- add(mobs.slime.alive, slime)
+ add(mobs.slimes.alive, slime)
+ 
 	end
+	
 end
 
 function draw_slime()
 
-	for s in all(mobs.slime.alive) do
+	for s in all(mobs.slimes.alive) do
 		
 		ac=0.1 -- acceleration
 		
@@ -679,8 +729,8 @@ function draw_slime()
 		----------------------------
 		
 		-- friction (lower for more)
-		s.dx *=.3
-		s.dy *=.3
+		s.dx *=.1
+		s.dy *=.1
 	
 		spd=sqrt(s.dx*s.dx+s.dy*s.dy)
 		s.f= (s.f+spd*2) % s.anims[s.d].fr 
@@ -742,11 +792,6 @@ function slime_ia()
 			) then
 					s.dx-= ac
 					s.d= "walking"
-			else --is in the right position and distance for atack
-					if (sword.cooldown==0) then
-							sword_attack()
-							sword.cooldown=10
-					end	
 			end
 	elseif(flr(s.y)!=flr(player.y)) then
 			if(
@@ -763,20 +808,13 @@ function slime_ia()
 			) then
 					s.dy-= ac 
 					s.d= "walking"
-			else
-					if (sword.cooldown==0) then
-							sword_attack()
-							sword.cooldown=10
-					end
 			end 
 	end
 	
 	end
-	--if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
 	
 end
 
->>>>>>> Stashed changes
 function spawn_goblins(maxg)
 	local coso = (#mobs.goblins.alive)+(mobs.goblins.dead)
 	print(coso,6*8-2, 8*8)
@@ -809,6 +847,8 @@ function spawn_goblins(maxg)
 			walking={fr=2,94,95},
   }
  }
+ 
+ goblin.number=(#mobs.goblins.alive)+(mobs.goblins.dead)+1
  
  add(actor, goblin)
  add(mobs.goblins.alive, goblin)
@@ -892,44 +932,70 @@ function goblin_ia()
 			if(
 			(flr(g.x)<flr(player.x)) 
 			and 
-			((flr(player.x)-flr(g.x))>1)
+			((flr(player.x)-flr(g.x))>3)
 			)then										
 					g.dx+= ac
 					g.d= "walking"					
 			elseif(
 			(flr(g.x)>flr(player.x)) 
 			and 
-			((flr(g.x)-flr(player.x))>1)
+			((flr(g.x)-flr(player.x))>3)
 			) then
 					g.dx-= ac
 					g.d= "walking"
-			else --is in the right position and distance for atack
-					if (sword.cooldown==0) then
-							sword_attack()
-							sword.cooldown=10
-					end	
 			end
 	elseif(flr(g.y)!=flr(player.y)) then
 			if(
 			(flr(g.y)<flr(player.y)) 
 			and 
-			((flr(player.y)-flr(g.y))>1)
+			((flr(player.y)-flr(g.y))>3)
 			)then
 					g.dy+= ac
 					g.d= "walking"
 			elseif(
 			(flr(g.y)>flr(player.y)) 
 			and 
-			((flr(g.y)-flr(player.y))>1)
+			((flr(g.y)-flr(player.y))>3)
 			) then
 					g.dy-= ac 
 					g.d= "walking"
-			else
-					if (sword.cooldown==0) then
-							sword_attack()
-							sword.cooldown=10
-					end
-			end 
+			end
+	elseif(flr(g.y)==flr(player.y)) then
+			if((player.d=="walkup" and player.x<g.x) or (player.d=="walkdown" and player.y>g.y)) then
+				if(
+				(flr(g.y)<flr(player.y)) 
+				and 
+				((flr(player.y)-flr(g.y))>1)
+				)then
+						g.dy+= ac
+						g.d= "walking"
+				elseif(
+				(flr(g.y)>flr(player.y)) 
+				and 
+				((flr(g.y)-flr(player.y))>1)
+				) then
+						g.dy-= ac 
+						g.d= "walking"
+				end
+			end			
+	elseif(flr(g.y)==flr(player.y)) then
+			if((player.d=="walkleft" and player.x<g.x) or (player.d=="walkright" and player.x>g.x)) then
+				if(
+				(flr(g.y)<flr(player.y)) 
+				and 
+				((flr(player.y)-flr(g.y))>1)
+				)then
+						g.dy+= ac
+						g.d= "walking"
+				elseif(
+				(flr(g.y)>flr(player.y)) 
+				and 
+				((flr(g.y)-flr(player.y))>1)
+				) then
+						g.dy-= ac 
+						g.d= "walking"
+				end
+			end						 
 	end
 	
 	end
@@ -1615,7 +1681,7 @@ end
 
 function draw_gui()
 			
-			if (player.hp>0 and boss1.hp>0) then
+			if (player.hp>0 --[[and boss1.hp>0]]) then
 					--character
    		spr(135,0,0,2,2)
    
