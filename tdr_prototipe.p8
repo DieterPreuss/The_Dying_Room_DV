@@ -21,7 +21,7 @@ mobs = {
 }
 
 scene= {
-	number=1,
+	number=99,
 	running=true,
 	timer=5000,
 	xcounter=0,
@@ -39,7 +39,6 @@ dirx={-1,1,0,0,1,1,-1,-1}
 diry={0,0,-1,1,-1,1,1,-1} 
 
 function _init()
-
 	--create player
 	player={
 		name="aleksandr",
@@ -1527,7 +1526,20 @@ function draw_scene(n)
 				addwind(3*8-5, 12*8, 91, 30, scene3.dialog2.txt, "boss") 			
 		
 		end
-		
+
+	elseif n==99 then --prueba
+		-- cada 4 segs cambio de
+		-- spritesheet
+		if t() % 4 == 0 then
+			flip_sheet() -- scene sheet
+		end
+
+		-- muestro todo el spritesheet
+		-- actual en escena
+		for i=0,255 do
+			spr(i + 1, (i % 16) * 8, (i \ 16) * 8)
+		end
+
 	end
 	
 	if(player.hp>0) print('presiona z para saltear', 2*8, 0*8)
@@ -1867,6 +1879,31 @@ function spear_attack()
   end
 	end
 	 
+end
+
+-->8
+--helpers
+actual_sheet=1
+
+function flip_sheet(num)
+	local sheets={
+		"default",
+		"scenes.p8"
+	}
+
+	if num==nil then
+		actual_sheet += 1
+		actual_sheet %= #sheets
+		num = actual_sheet + 1
+	end
+
+	printh("cambiando a spritesheet: "..num)
+
+	if sheets[num]=="default" then
+		reload(0,0,0x2000)
+	else
+		reload(0,0,0x2000,sheets[num])
+	end
 end
 __gfx__
 00020028820022000020002882200002000000288220022000200028822000200000002882200020000000288220000200800808a808008000880808a8080008
