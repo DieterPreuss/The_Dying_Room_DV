@@ -188,14 +188,14 @@ function _draw()
 			--print data
 
 			print_centered(player.hp)
-			print("dx: ", 10*8, 0)
-			print(player.dx, 13*8, 0)
-			print("dy: ", 10*8, 8)
-			print(player.dy, 13*8, 8)
-			print("x: ", 10*8, 16)
-			print(player.x, 13*8, 16)
-			print("y: ", 10*8, 24)
-			print(player.y, 13*8, 24)
+			--print("dx: ", 10*8, 0)
+			--print(player.dx, 13*8, 0)
+			--print("dy: ", 10*8, 8)
+			--print(player.dy, 13*8, 8)
+			--print("x: ", 10*8, 16)
+			--print(player.x, 13*8, 16)
+			--print("y: ", 10*8, 24)
+			--print(player.y, 13*8, 24)
 
 			
 			draw_blood()
@@ -480,7 +480,17 @@ function solid_actor(a, dx, dy)
 			if ((abs(x) < (a.w+a2.w)) and
 					 (abs(y) < (a.h+a2.h)))
 			then
-				if not ((a.name=="aleksandr" and a2.name=="spear") or (a.name=="dullahan" and a2.name=="sword")) then
+				if not (
+				(a.name=="aleksandr" and a2.name=="spear") 
+				or 
+				(a.name=="dullahan" and a2.name=="sword") 
+				or 
+				(a2.name=="sword" and (a.name=="slime" or a.name=="goblin"))
+				or
+				(a.name=="slime" and (a2.name=="slime" or a2.name=="goblin"))
+				or
+				(a.name=="goblin" and (a2.name=="slime" or a2.name=="goblin"))
+				) then
 					if (a.dmg_cooldown==0) then
 						a.hp=a.hp-a2.dmg
 						a.dmg_cooldown=20						
@@ -494,7 +504,17 @@ function solid_actor(a, dx, dy)
 				-- process each axis separately
 				
 				-- along x
-				if not ((a.name=="aleksandr" and a2.name=="spear") or a2.name=="sword") then
+				if not (
+				(a.name=="aleksandr" and a2.name=="spear") 
+				or 
+				(a.name=="dullahan" and a2.name=="sword") 
+				or 
+				(a2.name=="sword" and (a.name=="slime" or a.name=="goblin"))
+				or
+				(a.name=="slime" and (a2.name=="slime" or a2.name=="goblin"))
+				or
+				(a.name=="goblin" and (a2.name=="slime" or a2.name=="goblin"))
+				) then
 				if (dx != 0 and abs(x) <
 				    abs(a.x-a2.x))
 				then
@@ -617,32 +637,53 @@ end
 -->8
 --mobs and bosses
 
+function randomize_spawn(coord)
+	
+	local start=0
+	local variation=0
+	
+	if (coord=="x") then
+			start=rnd({7, 8})
+			variation=rnd(3) - 3
+	elseif (coord=="y") then
+			start=2
+			variation=flr(rnd(3)) + 1
+	end
+	
+	return start+variation	
+	
+end
+
 function spawn_mobs()
 
 	if(mobs.slimes.dead<3 and scene.running==false) then	
 	
-			spawn_slime(3)			
+			spawn_slime(3)
+			print("oleada 1 ", 10*8, 0)			
 			
 	elseif(mobs.slimes.dead>=3 and mobs.slimes.dead<9 and scene.running==false) then
 			
 			spawn_slime(9)
-			
+			print("oleada 2 ", 10*8, 0)
 	
-	elseif(mobs.slimes.dead==9 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
+	elseif(mobs.slimes.dead>=9 and  mobs.slimes.dead<17 and scene.running==false) then
 	
 			spawn_goblins(2)
 			spawn_slime(17)
+			print("oleada 3 ", 10*8, 0)
 			
-	elseif(mobs.goblins.dead==2 and mobs.slimes.dead==17 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
+	elseif(mobs.goblins.dead>=2 and mobs.slimes.dead>=17 and  mobs.slimes.dead<18 and  mobs.goblins.dead<8 and scene.running==false) then
 	
 			spawn_goblins(8)
 			spawn_slime(18)
+			print("oleada 4 ", 10*8, 0)
 	
-	elseif(mobs.goblins.dead==8 and mobs.slimes.dead==18 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
+	elseif(mobs.goblins.dead>=8 and mobs.slimes.dead>=18 and mobs.goblins.dead<18 and scene.running==false) then
 	
 			spawn_goblins(18)
+			print("oleada 5 ", 10*8, 0)
 	
-	elseif(mobs.goblins.dead==18 and mobs.slimes.dead==18 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then		
+	elseif(mobs.goblins.dead>=18 and scene.running==false) then		
 			
  		-- create & draw the boss
  		if (boss.alive==false) then
@@ -667,9 +708,9 @@ function spawn_slime(maxs)
 	if(maxs>((#mobs.slimes.alive)+(mobs.slimes.dead))) then
 	
 	slime={
-		name="slime a",
-	 x=14,
-	 y=7,
+		name="slime",
+	 x=randomize_spawn("x"),
+	 y=randomize_spawn("y"),
 	 dx=0,
 	 dy=0,
 	 d="idle",
@@ -688,6 +729,7 @@ function spawn_slime(maxs)
   hp=2, --5
   dmg=1,
   dmg_cooldown=0,
+  hptrack=2,
   blood_color=3,
   anims={
 	  idle={fr=1,178},
@@ -743,6 +785,7 @@ function draw_slime()
 	
 		--------draw sprite------------
 		if (s.hp>0) then
+			print(s.hp, s.x*8, s.y*8-10)
 			spr(s.anims[s.d][1+(flr(s.f))],
 	 		s.x*8-4,s.y*8-4, -- x,y (pixels)
 	 		1,1,s.d=="walking"    -- w,h, flip
@@ -763,10 +806,10 @@ function draw_slime()
 		-------------------------------		
 	
 		-----------draw blood--------
-		--if (hptrack.boss!=boss1.hp and boss1.hp>0) then
-		--			add_blood(boss1)
-		--			hptrack.boss=boss1.hp
-		--end	
+		if (s.hptrack>s.hp and s.hp>0) then
+					add_blood(s)
+					s.hptrack=s.hp
+		end	
 		-----------------------------
 		
 	end
@@ -819,10 +862,11 @@ function spawn_goblins(maxg)
 	local coso = (#mobs.goblins.alive)+(mobs.goblins.dead)
 	print(coso,6*8-2, 8*8)
 	if(maxg>(#mobs.goblins.alive)+(mobs.goblins.dead)) then
+	
 	goblin={
-		name="goblin a",
-	 x=14,
-	 y=7,
+		name="goblin",
+	 x=randomize_spawn("x"),
+	 y=randomize_spawn("y"),
 	 dx=0,
 	 dy=0,
 	 d="idle",
@@ -841,6 +885,7 @@ function spawn_goblins(maxg)
   hp=5, --5
   dmg=1,
   dmg_cooldown=0,
+  hptrack=5,
   blood_color=3,
   anims={
 	  idle={fr=1,79},
@@ -894,6 +939,7 @@ function draw_goblin()
 	
 		--------draw sprite------------
 		if (g.hp>0) then
+			print(g.hp, g.x*8, g.y*8-10)
 			spr(g.anims[g.d][1+(flr(g.f))],
 	 		g.x*8-4,g.y*8-4, -- x,y (pixels)
 	 		1,1,g.d=="walking"    -- w,h, flip
@@ -914,10 +960,10 @@ function draw_goblin()
 		-------------------------------		
 	
 		-----------draw blood--------
-		--if (hptrack.boss!=boss1.hp and boss1.hp>0) then
-		--			add_blood(boss1)
-		--			hptrack.boss=boss1.hp
-		--end	
+		if (g.hptrack>g.hp and g.hp>0) then
+					add_blood(g)
+					g.hptrack=g.hp
+		end
 		-----------------------------
 		
 	end
@@ -1269,6 +1315,7 @@ function boss1_ia()
 	if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
 	
 end
+
 -->8
 --scenes
 
