@@ -658,29 +658,52 @@ function spawn_mobs()
 
 	if(mobs.slimes.dead<3 and scene.running==false) then	
 	
-			spawn_slime(3)
-			print("oleada 1 ", 10*8, 0)			
+			--spawn_slime(3)
+			if(#mobs.slimes.alive<3 and mobs.slimes.dead==0) spawn_slime()
+			print("s v: ", 10*8, 0, 9)
+			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print("s m: ", 10*8, 8, 9)
+			print(mobs.slimes.dead, 13*8, 8, 9)
+			print("g v: ", 10*8, 16, 9)
+			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print("g m: ", 10*8, 24, 9)
+			print(mobs.goblins.dead, 13*8, 24, 9)			
 			
 	elseif(mobs.slimes.dead>=3 and mobs.slimes.dead<9 and scene.running==false) then
 			
-			spawn_slime(9)
-			print("oleada 2 ", 10*8, 0)
+			if(#mobs.slimes.alive<6 and mobs.slimes.dead==3) spawn_slime()
+			print("s v: ", 10*8, 0, 9)
+			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print("s m: ", 10*8, 8, 9)
+			print(mobs.slimes.dead, 13*8, 8, 9)
+			print("g v: ", 10*8, 16, 9)
+			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print("g m: ", 10*8, 24, 9)
+			print(mobs.goblins.dead, 13*8, 24, 9)
 	
-	elseif(mobs.slimes.dead>=9 and  mobs.slimes.dead<17 and scene.running==false) then
+	elseif(mobs.slimes.dead>=9 and mobs.slimes.dead<17 and mobs.goblins.dead<2 and scene.running==false) then
 	
-			spawn_goblins(2)
-			spawn_slime(17)
-			print("oleada 3 ", 10*8, 0)
+			if(#mobs.goblins.alive<2 and mobs.goblins.dead==0) spawn_goblin()
+			if(#mobs.slimes.alive<8 and mobs.slimes.dead==9) spawn_slime()
+			print("s v: ", 10*8, 0, 9)
+			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print("s m: ", 10*8, 8, 2)
+			print(mobs.slimes.dead, 13*8, 8, 9)
+			print("g v: ", 10*8, 16, 9)
+			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print("g m: ", 10*8, 24, 9)
+			print(mobs.goblins.dead, 13*8, 24, 9)
 			
-	elseif(mobs.goblins.dead>=2 and mobs.slimes.dead>=17 and  mobs.slimes.dead<18 and  mobs.goblins.dead<8 and scene.running==false) then
-	
-			spawn_goblins(8)
-			spawn_slime(18)
+			
+	elseif(mobs.goblins.dead>=2 and mobs.slimes.dead>=17 and mobs.slimes.dead<18 and  mobs.goblins.dead<8 and scene.running==false) then
+			
+			if(#mobs.goblins.alive<6 and mobs.goblins.dead==2) spawn_goblin()
+			if(#mobs.slimes.alive<1 and mobs.slimes.dead==17) spawn_slime()
 			print("oleada 4 ", 10*8, 0)
 	
 	elseif(mobs.goblins.dead>=8 and mobs.slimes.dead>=18 and mobs.goblins.dead<18 and scene.running==false) then
 	
-			spawn_goblins(18)
+			if(#mobs.goblins.alive<10 and mobs.goblins.dead==8) spawn_goblin()
 			print("oleada 5 ", 10*8, 0)
 	
 	elseif(mobs.goblins.dead>=18 and scene.running==false) then		
@@ -702,9 +725,47 @@ function spawn_mobs()
 
 end
 
+function spawn_slime()
+		
+		slime={
+			name="slime",
+	 	x=randomize_spawn("x"),
+	 	y=randomize_spawn("y"),
+	 	dx=0,
+	 	dy=0,
+	 	d="idle",
+  	sh=1,
+  	sw=1,
+  	--------------
+  	bounce=2,
+  	-- half-width and half-height
+			-- slightly less than 0.5 so
+			-- that will fit through 1-wide
+			-- holes.
+			w=0.5,
+			h=0.5,
+  	-------------
+  	f=0,
+  	hp=2, --5
+  	dmg=1,
+  	dmg_cooldown=0,
+  	hptrack=2,
+  	blood_color=3,
+  	anims={
+	  	idle={fr=1,178},
+				walking={fr=3,178,177,176},
+  	}
+ }
+ 
+ add(actor, slime)
+ add(mobs.slimes.alive, slime)
+		
+end
+
+--[[
 function spawn_slime(maxs)
 	local coso = (#mobs.slimes.alive)+(mobs.slimes.dead)
-	print(coso,6*8-2, 8*8)
+	
 	if(maxs>((#mobs.slimes.alive)+(mobs.slimes.dead))) then
 	
 	slime={
@@ -745,6 +806,7 @@ function spawn_slime(maxs)
 	end
 	
 end
+]]
 
 function draw_slime()
 
@@ -858,11 +920,8 @@ function slime_ia()
 	
 end
 
-function spawn_goblins(maxg)
-	local coso = (#mobs.goblins.alive)+(mobs.goblins.dead)
-	print(coso,6*8-2, 8*8)
-	if(maxg>(#mobs.goblins.alive)+(mobs.goblins.dead)) then
-	
+function spawn_goblin()
+
 	goblin={
 		name="goblin",
 	 x=randomize_spawn("x"),
@@ -893,11 +952,9 @@ function spawn_goblins(maxg)
   }
  }
  
- goblin.number=(#mobs.goblins.alive)+(mobs.goblins.dead)+1
- 
  add(actor, goblin)
  add(mobs.goblins.alive, goblin)
-	end
+
 end
 
 function draw_goblin()
