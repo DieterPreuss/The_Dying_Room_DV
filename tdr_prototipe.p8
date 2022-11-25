@@ -323,6 +323,12 @@ function _update()
 			else
 				player.dy *= -player.bounce
 			end
+			
+			--keeps the player from going out of bounds
+			if(player.x<1 or player.x>14 or player.y<1 or player.y>14) then
+				player.x=8
+				player.y=12
+			end
 	
 			-- friction (lower for more)
 			player.dx *=.3
@@ -514,11 +520,7 @@ function solid_actor(a, dx, dy)
 				or 
 				(a.name=="dullahan" and a2.name=="sword") 
 				or 
-				(a2.name=="sword" and (a.name=="slime" or a.name=="goblin"))
-				or
-				(a.name=="slime" and (a2.name=="slime" or a2.name=="goblin"))
-				or
-				(a.name=="goblin" and (a2.name=="slime" or a2.name=="goblin"))
+				(a2.name=="sword" and (a.name=="slime" or a.name=="goblin"))			
 				) then
 				if (dx != 0 and abs(x) <
 				    abs(a.x-a2.x))
@@ -817,7 +819,7 @@ function draw_slime()
 
 	for s in all(mobs.slimes.alive) do
 		
-		ac=0.1 -- acceleration
+		ac=0.02 -- acceleration
 		
 		if not solid_a(s, s.dx, 0) then
 			s.x += s.dx
@@ -838,12 +840,14 @@ function draw_slime()
 		----------------------------
 		
 		-- friction (lower for more)
-		s.dx *=.1
-		s.dy *=.1
-	
+		s.dx *=.09
+		s.dy *=.09
+		
 		spd=sqrt(s.dx*s.dx+s.dy*s.dy)
-		s.f= (s.f+spd*2) % s.anims[s.d].fr 
-		if (spd < 0.05) f=0
+		s.f= (s.f+spd*35) % s.anims[s.d].fr 
+		if (spd < 0.005) s.f=1
+		
+		--print(spd)
 	
 		------------cooldowns----------
 		--if(g.cooldown.attack1!=0) g.cooldown.attack1=g.cooldown.attack1-1
@@ -883,43 +887,101 @@ function draw_slime()
 
 end
 
+function distance (p, m)
+ local dy= abs(p.y - m.y)
+ local dx= abs(p.x - m.x)
+
+ return sqrt(dx*dx + dy*dy)
+end
+
 function slime_ia()
 
 	for s in all(mobs.slimes.alive) do
 	
-		if(flr(s.x)!=flr(player.x))then
-			if(
-			(flr(s.x)<flr(player.x)) 
-			and 
-			((flr(player.x)-flr(s.x))>1)
-			)then										
-					s.dx+= ac
-					s.d= "walking"					
-			elseif(
-			(flr(s.x)>flr(player.x)) 
-			and 
-			((flr(s.x)-flr(player.x))>1)
-			) then
-					s.dx-= ac
-					s.d= "walking"
-			end
-	elseif(flr(s.y)!=flr(player.y)) then
-			if(
-			(flr(s.y)<flr(player.y)) 
-			and 
-			((flr(player.y)-flr(s.y))>1)
-			)then
-					s.dy+= ac
-					s.d= "walking"
-			elseif(
-			(flr(s.y)>flr(player.y)) 
-			and 
-			((flr(s.y)-flr(player.y))>1)
-			) then
-					s.dy-= ac 
-					s.d= "walking"
-			end 
-	end
+		if(distance (player, s)>1) then	
+				if(player.x>s.x) then		
+						s.dx+= ac
+						s.d= "walking"			
+				elseif(player.x<s.x) then				
+						s.dx-= ac
+						s.d= "walking"				
+				elseif(flr(player.x)==flr(s.x)) then				
+						if(player.y>s.y) then					
+								s.dy+= 0.0005
+								s.d= "walking"					
+						elseif(player.y<s.y) then						
+								s.dy-= 0.0005
+								s.d= "walking"					
+						end
+						
+						if(rnd(100)<30) then
+								if(player.y>s.y) then					
+										s.y+= 2
+										s.x-= 2
+										s.d= "walking"					
+								elseif(player.y<s.y) then						
+										s.y-= 2
+										s.x+= 2
+										s.d= "walking"					
+								end
+						end
+									
+				end
+				
+				if(player.y>s.y) then		
+						s.dy+= ac
+						s.d= "walking"			
+				elseif(player.y<s.y) then				
+						s.dy-= ac
+						s.d= "walking"				
+				elseif(flr(player.y)==flr(s.y)) then				
+						if(player.x>s.x) then					
+								s.dx+= 0.0005
+								s.d= "walking"					
+						elseif(player.x<s.x) then						
+								s.dx-= 0.0005
+								s.d= "walking"					
+						end
+						
+						if(rnd(100)<70) then
+								if(player.x>s.x) then					
+										s.x+= 2
+										s.y-= 2
+										s.d= "walking"					
+								elseif(player.x<s.x) then						
+										s.x-= 2
+										s.y+= 2
+										s.d= "walking"					
+								end
+						end
+									
+				end
+		
+		elseif(distance (player, s)<2) then		
+			 
+			 if(flr(player.x)==flr(s.x)) then
+			 		if(player.x>s.x) then					
+								s.x+= 2
+								s.d= "walking"					
+						elseif(player.x<s.x) then						
+								s.x-= 2
+								s.d= "walking"					
+						end	 
+			 elseif(flr(player.y)==flr(s.y)) then
+			 		if(player.x>s.x) then					
+								s.x+= 2
+								s.d= "walking"					
+						elseif(player.x<s.x) then						
+								s.x-= 2
+								s.d= "walking"					
+						end
+			 end			 
+		end
+		
+		if(s.x<1 or s.x>14 or s.y<1 or s.y>14) then
+				s.x=7
+				s.y=2
+		end
 	
 	end
 	
@@ -992,7 +1054,7 @@ function draw_goblin()
 	
 		spd=sqrt(g.dx*g.dx+g.dy*g.dy)
 		g.f= (g.f+spd*2) % g.anims[g.d].fr 
-		if (spd < 0.05) f=0
+		if (spd < 0.05) g.f=1
 	
 		------------cooldowns----------
 		--if(g.cooldown.attack1!=0) g.cooldown.attack1=g.cooldown.attack1-1
@@ -1036,78 +1098,112 @@ function goblin_ia()
 
 	for g in all(mobs.goblins.alive) do
 	
-		if(flr(g.x)!=flr(player.x))then
-			if(
-			(flr(g.x)<flr(player.x)) 
-			and 
-			((flr(player.x)-flr(g.x))>3)
-			)then										
-					g.dx+= ac
-					g.d= "walking"					
-			elseif(
-			(flr(g.x)>flr(player.x)) 
-			and 
-			((flr(g.x)-flr(player.x))>3)
-			) then
-					g.dx-= ac
-					g.d= "walking"
-			end
-	elseif(flr(g.y)!=flr(player.y)) then
-			if(
-			(flr(g.y)<flr(player.y)) 
-			and 
-			((flr(player.y)-flr(g.y))>3)
-			)then
-					g.dy+= ac
-					g.d= "walking"
-			elseif(
-			(flr(g.y)>flr(player.y)) 
-			and 
-			((flr(g.y)-flr(player.y))>3)
-			) then
-					g.dy-= ac 
-					g.d= "walking"
-			end
-	elseif(flr(g.y)==flr(player.y)) then
-			if((player.d=="walkup" and player.x<g.x) or (player.d=="walkdown" and player.y>g.y)) then
-				if(
-				(flr(g.y)<flr(player.y)) 
-				and 
-				((flr(player.y)-flr(g.y))>1)
-				)then
-						g.dy+= ac
-						g.d= "walking"
-				elseif(
-				(flr(g.y)>flr(player.y)) 
-				and 
-				((flr(g.y)-flr(player.y))>1)
-				) then
-						g.dy-= ac 
-						g.d= "walking"
+		if(distance (player, g)>4) then	
+				if(player.x>g.x) then		
+						g.dx+= ac
+						g.d= "walking"			
+				elseif(player.x<g.x) then				
+						g.dx-= ac
+						g.d= "walking"				
+				elseif(flr(player.x)==flr(g.x)) then				
+						if(player.y>g.y) then					
+								g.dy+= 0.0005
+								g.d= "walking"					
+						elseif(player.y<g.y) then						
+								g.dy-= 0.0005
+								g.d= "walking"					
+						end
+						
+						--[[if(rnd(100)<30) then
+								if(player.y>g.y) then					
+										g.y+= 2
+										g.x-= 2
+										g.d= "walking"					
+								elseif(player.y<g.y) then						
+										g.y-= 2
+										g.x+= 2
+										g.d= "walking"					
+								end
+						end]]
+									
 				end
-			end			
-	elseif(flr(g.y)==flr(player.y)) then
-			if((player.d=="walkleft" and player.x<g.x) or (player.d=="walkright" and player.x>g.x)) then
-				if(
-				(flr(g.y)<flr(player.y)) 
-				and 
-				((flr(player.y)-flr(g.y))>1)
-				)then
+				
+				if(player.y>g.y) then		
 						g.dy+= ac
-						g.d= "walking"
-				elseif(
-				(flr(g.y)>flr(player.y)) 
-				and 
-				((flr(g.y)-flr(player.y))>1)
-				) then
-						g.dy-= ac 
-						g.d= "walking"
+						g.d= "walking"			
+				elseif(player.y<g.y) then				
+						g.dy-= ac
+						g.d= "walking"				
+				elseif(flr(player.y)==flr(g.y)) then				
+						if(player.x>g.x) then					
+								g.dx+= 0.0005
+								g.d= "walking"					
+						elseif(player.x<g.x) then						
+								g.dx-= 0.0005
+								g.d= "walking"					
+						end
+						
+						--[[if(rnd(100)<70) then
+								if(player.x>g.x) then					
+										g.x+= 2
+										g.y-= 2
+										g.d= "walking"					
+								elseif(player.x<g.x) then						
+										g.x-= 2
+										g.y+= 2
+										g.d= "walking"					
+								end
+						end]]
+									
 				end
-			end						 
-	end
+		
+		elseif(distance (player, g)<4) then		
+			 
+			 if(flr(player.x)==flr(g.x)) then
+			 		if(player.x>g.x) then
+			 		
+			 				if(player.d=="walkright") then
+			 						g.dx+= 0.9
+			 				elseif(rnd(100)<30) then
+			 						if(player.x<=12) g.x= player.x+2
+			 				end					
+				
+						elseif(player.x<g.x) then
+						
+								if(player.d=="walkleft") then
+			 						g.dx-= 0.9
+			 				elseif(rnd(100)<30) then
+			 						if(player.x>=3) g.x= player.x-2
+			 				end						
+					
+						end	 
+			 elseif(flr(player.y)==flr(g.y)) then
+			 		if(player.y>g.y) then
+			 		
+			 				if(player.d=="walkdown") then
+			 						g.dy+= 0.9
+			 				elseif(rnd(100)<30) then
+			 						if(player.y<=12) g.y= player.y+2
+			 				end						
+					
+						elseif(player.y<g.y) then	
+						
+								if(player.d=="walkup") then
+			 						g.dy-= 0.9
+			 				elseif(rnd(100)<30) then
+			 						if(player.y>=3) g.y= player.y-2
+			 				end						
+				
+						end
+			 end			 
+		end
+		
+		if(g.x<1 or g.x>14 or g.y<1 or g.y>14) then
+				g.x=7
+				g.y=2
+		end
 	
 	end
-	--if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
 	
 end
 
@@ -1372,6 +1468,11 @@ function boss1_ia()
 							sword.cooldown=10
 					end
 			end 
+	end
+	
+	if(boss1.x<1 or boss1.x>14 or boss1.y<1 or boss1.y>14) then
+				boss1.x=7
+				boss1.y=2
 	end
 	
 	if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
@@ -1912,7 +2013,7 @@ end
 -- weapons and attacks
 
 function draw_weapon()
-			
+					
 			----sprite and position--------
 			if (player.weapon=="spear") then
 			
@@ -1921,29 +2022,49 @@ function draw_weapon()
 						spear.x=player.x-2.5
  					spear.y=player.y
  				end
+ 				
+ 				spear.w=1
+ 				spear.h=0.5
+ 					
 					sprt=spear.sprt.h
 					switch=true
+					
 				elseif(player.d== "walkright") then
 					if(spear.cooldown==0) then
 						spear.x=player.x+0.1
 						spear.y=player.y+0.5
 					end
+					
+					spear.w=1
+ 				spear.h=0.5
+ 				
 					sprt=spear.sprt.h
 					switch=false
+					
 				elseif(player.d== "walkup") then
 					if(spear.cooldown==0) then
 						spear.x=player.x-1
  					spear.y=player.y-1.7
  				end
+ 				
+ 				spear.w=0.5
+ 				spear.h=1
+ 				
 					sprt=spear.sprt.vu
 					switch=false
+					
 				elseif(player.d== "walkdown") then
 					if(spear.cooldown==0) then
 						spear.x=player.x+0.6
  					spear.y=player.y+0.3
  				end
+ 				
+ 				spear.w=0.5
+ 				spear.h=1
+ 				
 					sprt=spear.sprt.vd
 					switch=true
+					
 				else
 					if(spear.cooldown==0) then
 						spear.x=player.x+0.6
