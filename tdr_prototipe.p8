@@ -21,7 +21,7 @@ mobs = {
 }
 
 scene= {
-	number=0,
+	number=1,
 	running=true,
 	timer=5000,
 	xcounter=0,
@@ -328,7 +328,7 @@ function _update()
 			end
 			
 			--keeps the player from going out of bounds
-			if(player.x<1 or player.x>14 or player.y<1 or player.y>14) then
+			if(player.x<=0 or player.x>=15 or player.y<=0 or player.y>=15) then
 				player.x=8
 				player.y=12
 			end
@@ -716,10 +716,17 @@ function spawn_mobs()
 			if(#mobs.goblins.alive<10 and mobs.goblins.dead==8) spawn_goblin()
 			print("oleada 5 ", 10*8, 0)
 	
-	elseif(mobs.goblins.dead>=18 and scene.running==false) then		
+	elseif(mobs.goblins.dead>=18 and scene.running==false) then				
 			
  		-- create & draw the boss
  		if (boss.alive==false) then
+ 		
+ 				--triggers boss entrance scene
+					scene.timer=5000
+					scene.number=2
+					scene.running=true
+					
+ 				--spawns boss
  				boss.number=boss.number+1
  				spawn_boss(boss.number)
  				boss.alive=true
