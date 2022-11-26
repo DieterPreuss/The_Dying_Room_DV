@@ -714,6 +714,10 @@ function spawn_mobs()
 	
 	elseif(mobs.goblins.dead>=18 and scene.running==false) then		
 			
+			scene.timer=5000
+			scene.number=1
+			scene.running=true
+			
  		-- create & draw the boss
  		if (boss.alive==false) then
  				boss.number=boss.number+1
@@ -767,52 +771,6 @@ function spawn_slime()
  add(mobs.slimes.alive, slime)
 		
 end
-
---[[
-function spawn_slime(maxs)
-	local coso = (#mobs.slimes.alive)+(mobs.slimes.dead)
-	
-	if(maxs>((#mobs.slimes.alive)+(mobs.slimes.dead))) then
-	
-	slime={
-		name="slime",
-	 x=randomize_spawn("x"),
-	 y=randomize_spawn("y"),
-	 dx=0,
-	 dy=0,
-	 d="idle",
-  sh=1,
-  sw=1,
-  --------------
-  bounce=2,
-  -- half-width and half-height
-		-- slightly less than 0.5 so
-		-- that will fit through 1-wide
-		-- holes.
-		w=0.5,
-		h=0.5,
-  -------------
-  f=0,
-  hp=2, --5
-  dmg=1,
-  dmg_cooldown=0,
-  hptrack=2,
-  blood_color=3,
-  anims={
-	  idle={fr=1,178},
-			walking={fr=3,178,177,176},
-  }
- }
- 
- slime.number=(#mobs.slimes.alive)+(mobs.slimes.dead)+1
- 
- add(actor, slime)
- add(mobs.slimes.alive, slime)
- 
-	end
-	
-end
-]]
 
 function draw_slime()
 
@@ -977,7 +935,7 @@ function slime_ia()
 			 end			 
 		end
 		
-		if(s.x<1 or s.x>14 or s.y<1 or s.y>14) then
+		if(s.x<=0 or s.x>=15 or s.y<=0 or s.y>=15) then
 				s.x=7
 				s.y=2
 		end
