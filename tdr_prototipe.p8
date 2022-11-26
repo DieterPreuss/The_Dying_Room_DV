@@ -7,16 +7,41 @@ objs = {}  	-- a list of all the objects in the game (starts empty)
 actor = {} 	-- all actors
 wpns = {}  	-- list of weapons
 wind = {}   -- list of text windows
-blood = {}
+blood = {}		-- table with blood splatters and their positon
+drops = {}  -- table with drops and their positon
 
 mobs = {
  goblins= {
  	alive= {},
  	dead= 0,
+ 	drops={
+ 		bomb{
+ 			prob=1,
+ 			item="apple",
+ 		},
+ 		knife{
+ 			prob=10,
+ 			item="potion",
+ 		},
+ 	},
  },
  slimes= {
  	alive= {},
  	dead= 0,
+ 	drops={
+ 		apple{
+ 			prob=10,
+ 			item="apple",
+ 		},
+ 		potion{
+ 			prob=2,
+ 			item="potion",
+ 		},
+ 		drumstick{
+ 			prob=5,
+ 			item="drumstick",
+ 		},		
+ 	},
  },
 }
 
@@ -131,6 +156,10 @@ function _init()
  		sprt=137,
  		cooldown=0
  	},
+ 	drumstick={
+ 		sprt=110,
+ 		cooldown=0
+ 	},
  	potion={
  		sprt=171,
  		cooldown=0
@@ -203,6 +232,7 @@ function _draw()
 
 			
 			draw_blood()
+			
 			-- draw the player
 			if (player.hp!=0) then	
 				spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
@@ -248,6 +278,8 @@ function _draw()
  		]]			
 	
 			draw_weapon()
+			
+			draw_drops()
 		
 			draw_bomb()
 	
@@ -506,6 +538,13 @@ function solid_actor(a, dx, dy)
 				(a.name=="goblin" and (a2.name=="slime" or a2.name=="goblin"))
 				) then
 					if (a.dmg_cooldown==0) then
+						
+						--drops item if corresponds
+						if((a.name=="goblin" or a.name=="slime") and (a.hp-1==0)) then
+								drop(a)
+						end
+						
+						--deals damage to the mob
 						a.hp=a.hp-a2.dmg
 						a.dmg_cooldown=20						
 					end	
@@ -645,7 +684,32 @@ function damage(a, dx, dy)
 end
 ]]
 -->8
---mobs and bosses
+--mobs and bosses and drops
+
+function drop (mob)
+
+	if(mob=="slime") then
+			local drop= rnd({"apple", "potion", "drumstick"})
+	elseif(mob=="goblin")
+			local drop= rnd({"bomb", "knife"})
+	end
+
+ if (rnd(100) < mobs.drops[drop].prob) then
+		-- add drop to spawned drops
+		drop={
+			x=mob.x,
+			y=mob.y,
+			item=mobs.drops[drop].item,
+		}
+		add(drops, drop)
+	end
+end
+
+function spawnear_item (item)
+
+ add(drops, )
+	
+end
 
 function randomize_spawn(coord)
 	
@@ -2067,6 +2131,17 @@ function collect_item()
 			mset(player.x,player.y+1,128)
 			if(player.hp<8) player.hp=player.hp+1
 			sfx(0)
+	-- collect drumstick
+	elseif(mget(player.x,player.y)==110) then
+			mset(player.x,player.y,128)
+			mset(player.x+1,player.y+1,128)
+			mset(player.x-1,player.y-1,128)
+			mset(player.x+1,player.y-1,128)
+			mset(player.x-1,player.y+1,128)
+			mset(player.x+1,player.y,128)
+			mset(player.x,player.y+1,128)
+			if(player.hp<7) player.hp=player.hp+2
+			sfx(0)		
 	end
 		 
 end
@@ -2093,6 +2168,14 @@ function use_item(i)
 			itembox[player.item].cooldown=120	
 	end
 		 
+end
+
+function draw_drops()
+
+for d in all(drops) do
+			spr(itembox[d.item].sprt, d.x, d.y, 2, 2)
+end
+
 end
 -->8
 -- weapons and attacks
