@@ -136,7 +136,11 @@ function _init()
  	},
  	bomb={
  		sprt=170,
- 		cooldown=0
+ 		bomb=68,
+ 		primed=163,
+ 		explosion=192,
+ 		cooldown=0,
+ 		fuse=0
  	},
  	knife={
  		sprt=144,
@@ -187,18 +191,17 @@ function _draw()
 			--print data
 
 			print_centered(player.hp)
-			print("dx: ", 10*8, 0)
-			print(player.dx, 13*8, 0)
-			print("dy: ", 10*8, 8)
-			print(player.dy, 13*8, 8)
-			print("x: ", 10*8, 16)
-			print(player.x, 13*8, 16)
-			print("y: ", 10*8, 24)
-			print(player.y, 13*8, 24)
+			--print("dx: ", 10*8, 0)
+			--print(player.dx, 13*8, 0)
+			--print("dy: ", 10*8, 8)
+			--print(player.dy, 13*8, 8)
+			--print("x: ", 10*8, 16)
+			--print(player.x, 13*8, 16)
+			--print("y: ", 10*8, 24)
+			--print(player.y, 13*8, 24)
 
 			
 			draw_blood()
-			
 			-- draw the player
 			if (player.hp!=0) then	
 				spr(player.anims[player.d][2+(flr(player.f))],--*2)],      -- frame index
@@ -244,6 +247,8 @@ function _draw()
  		]]			
 	
 			draw_weapon()
+		
+			draw_bomb()
 	
 			draw_gui()  
 	
@@ -316,6 +321,12 @@ function _update()
 				player.y += player.dy
 			else
 				player.dy *= -player.bounce
+			end
+			
+			--keeps the player from going out of bounds
+			if(player.x<1 or player.x>14 or player.y<1 or player.y>14) then
+				player.x=8
+				player.y=12
 			end
 	
 			-- friction (lower for more)
@@ -479,7 +490,17 @@ function solid_actor(a, dx, dy)
 			if ((abs(x) < (a.w+a2.w)) and
 					 (abs(y) < (a.h+a2.h)))
 			then
-				if not ((a.name=="aleksandr" and a2.name=="spear") or (a.name=="dullahan" and a2.name=="sword")) then
+				if not (
+				(a.name=="aleksandr" and a2.name=="spear") 
+				or 
+				(a.name=="dullahan" and a2.name=="sword") 
+				or 
+				(a2.name=="sword" and (a.name=="slime" or a.name=="goblin"))
+				or
+				(a.name=="slime" and (a2.name=="slime" or a2.name=="goblin"))
+				or
+				(a.name=="goblin" and (a2.name=="slime" or a2.name=="goblin"))
+				) then
 					if (a.dmg_cooldown==0) then
 						a.hp=a.hp-a2.dmg
 						a.dmg_cooldown=20						
@@ -493,7 +514,13 @@ function solid_actor(a, dx, dy)
 				-- process each axis separately
 				
 				-- along x
-				if not ((a.name=="aleksandr" and a2.name=="spear") or a2.name=="sword") then
+				if not (
+				(a.name=="aleksandr" and a2.name=="spear") 
+				or 
+				(a.name=="dullahan" and a2.name=="sword") 
+				or 
+				(a2.name=="sword" and (a.name=="slime" or a.name=="goblin"))			
+				) then
 				if (dx != 0 and abs(x) <
 				    abs(a.x-a2.x))
 				then
@@ -616,32 +643,76 @@ end
 -->8
 --mobs and bosses
 
+function randomize_spawn(coord)
+	
+	local start=0
+	local variation=0
+	
+	if (coord=="x") then
+			start=rnd({7, 8})
+			variation=rnd(3) - 3
+	elseif (coord=="y") then
+			start=2
+			variation=flr(rnd(3)) + 1
+	end
+	
+	return start+variation	
+	
+end
+
 function spawn_mobs()
 
 	if(mobs.slimes.dead<3 and scene.running==false) then	
 	
-			spawn_slime(3)			
+			--spawn_slime(3)
+			if(#mobs.slimes.alive<3 and mobs.slimes.dead==0) spawn_slime()
+			print("s v: ", 10*8, 0, 9)
+			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print("s m: ", 10*8, 8, 9)
+			print(mobs.slimes.dead, 13*8, 8, 9)
+			print("g v: ", 10*8, 16, 9)
+			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print("g m: ", 10*8, 24, 9)
+			print(mobs.goblins.dead, 13*8, 24, 9)			
 			
 	elseif(mobs.slimes.dead>=3 and mobs.slimes.dead<9 and scene.running==false) then
 			
-			spawn_slime(9)
+			if(#mobs.slimes.alive<6 and mobs.slimes.dead==3) spawn_slime()
+			print("s v: ", 10*8, 0, 9)
+			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print("s m: ", 10*8, 8, 9)
+			print(mobs.slimes.dead, 13*8, 8, 9)
+			print("g v: ", 10*8, 16, 9)
+			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print("g m: ", 10*8, 24, 9)
+			print(mobs.goblins.dead, 13*8, 24, 9)
+	
+	elseif(mobs.slimes.dead>=9 and mobs.slimes.dead<17 and mobs.goblins.dead<2 and scene.running==false) then
+	
+			if(#mobs.goblins.alive<2 and mobs.goblins.dead==0) spawn_goblin()
+			if(#mobs.slimes.alive<8 and mobs.slimes.dead==9) spawn_slime()
+			print("s v: ", 10*8, 0, 9)
+			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print("s m: ", 10*8, 8, 2)
+			print(mobs.slimes.dead, 13*8, 8, 9)
+			print("g v: ", 10*8, 16, 9)
+			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print("g m: ", 10*8, 24, 9)
+			print(mobs.goblins.dead, 13*8, 24, 9)
 			
-	
-	elseif(mobs.slimes.dead==9 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
-	
-			spawn_goblins(2)
-			spawn_slime(17)
 			
-	elseif(mobs.goblins.dead==2 and mobs.slimes.dead==17 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
+	elseif(mobs.goblins.dead>=2 and mobs.slimes.dead>=17 and mobs.slimes.dead<18 and  mobs.goblins.dead<8 and scene.running==false) then
+			
+			if(#mobs.goblins.alive<6 and mobs.goblins.dead==2) spawn_goblin()
+			if(#mobs.slimes.alive<1 and mobs.slimes.dead==17) spawn_slime()
+			print("oleada 4 ", 10*8, 0)
 	
-			spawn_goblins(8)
-			spawn_slime(18)
+	elseif(mobs.goblins.dead>=8 and mobs.slimes.dead>=18 and mobs.goblins.dead<18 and scene.running==false) then
 	
-	elseif(mobs.goblins.dead==8 and mobs.slimes.dead==18 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then
+			if(#mobs.goblins.alive<10 and mobs.goblins.dead==8) spawn_goblin()
+			print("oleada 5 ", 10*8, 0)
 	
-			spawn_goblins(18)
-	
-	elseif(mobs.goblins.dead==18 and mobs.slimes.dead==18 and #mobs.slimes.alive==0 and #mobs.slimes.alive==0 and scene.running==false) then		
+	elseif(mobs.goblins.dead>=18 and scene.running==false) then		
 			
  		-- create & draw the boss
  		if (boss.alive==false) then
@@ -660,15 +731,53 @@ function spawn_mobs()
 
 end
 
+function spawn_slime()
+		
+		slime={
+			name="slime",
+	 	x=randomize_spawn("x"),
+	 	y=randomize_spawn("y"),
+	 	dx=0,
+	 	dy=0,
+	 	d="idle",
+  	sh=1,
+  	sw=1,
+  	--------------
+  	bounce=2,
+  	-- half-width and half-height
+			-- slightly less than 0.5 so
+			-- that will fit through 1-wide
+			-- holes.
+			w=0.5,
+			h=0.5,
+  	-------------
+  	f=0,
+  	hp=2, --5
+  	dmg=1,
+  	dmg_cooldown=0,
+  	hptrack=2,
+  	blood_color=3,
+  	anims={
+	  	idle={fr=1,178},
+				walking={fr=3,178,177,176},
+  	}
+ }
+ 
+ add(actor, slime)
+ add(mobs.slimes.alive, slime)
+		
+end
+
+--[[
 function spawn_slime(maxs)
 	local coso = (#mobs.slimes.alive)+(mobs.slimes.dead)
-	print(coso,6*8-2, 8*8)
+	
 	if(maxs>((#mobs.slimes.alive)+(mobs.slimes.dead))) then
 	
 	slime={
-		name="slime a",
-	 x=14,
-	 y=7,
+		name="slime",
+	 x=randomize_spawn("x"),
+	 y=randomize_spawn("y"),
 	 dx=0,
 	 dy=0,
 	 d="idle",
@@ -687,6 +796,7 @@ function spawn_slime(maxs)
   hp=2, --5
   dmg=1,
   dmg_cooldown=0,
+  hptrack=2,
   blood_color=3,
   anims={
 	  idle={fr=1,178},
@@ -702,12 +812,13 @@ function spawn_slime(maxs)
 	end
 	
 end
+]]
 
 function draw_slime()
 
 	for s in all(mobs.slimes.alive) do
 		
-		ac=0.1 -- acceleration
+		ac=0.02 -- acceleration
 		
 		if not solid_a(s, s.dx, 0) then
 			s.x += s.dx
@@ -728,12 +839,14 @@ function draw_slime()
 		----------------------------
 		
 		-- friction (lower for more)
-		s.dx *=.1
-		s.dy *=.1
-	
+		s.dx *=.09
+		s.dy *=.09
+		
 		spd=sqrt(s.dx*s.dx+s.dy*s.dy)
-		s.f= (s.f+spd*2) % s.anims[s.d].fr 
-		if (spd < 0.05) f=0
+		s.f= (s.f+spd*35) % s.anims[s.d].fr 
+		if (spd < 0.005) s.f=1
+		
+		--print(spd)
 	
 		------------cooldowns----------
 		--if(g.cooldown.attack1!=0) g.cooldown.attack1=g.cooldown.attack1-1
@@ -742,6 +855,7 @@ function draw_slime()
 	
 		--------draw sprite------------
 		if (s.hp>0) then
+			print(s.hp, s.x*8, s.y*8-10)
 			spr(s.anims[s.d][1+(flr(s.f))],
 	 		s.x*8-4,s.y*8-4, -- x,y (pixels)
 	 		1,1,s.d=="walking"    -- w,h, flip
@@ -762,66 +876,122 @@ function draw_slime()
 		-------------------------------		
 	
 		-----------draw blood--------
-		--if (hptrack.boss!=boss1.hp and boss1.hp>0) then
-		--			add_blood(boss1)
-		--			hptrack.boss=boss1.hp
-		--end	
+		if (s.hptrack>s.hp and s.hp>0) then
+					add_blood(s)
+					s.hptrack=s.hp
+		end	
 		-----------------------------
 		
 	end
 
 end
 
+function distance (p, m)
+ local dy= abs(p.y - m.y)
+ local dx= abs(p.x - m.x)
+
+ return sqrt(dx*dx + dy*dy)
+end
+
 function slime_ia()
 
 	for s in all(mobs.slimes.alive) do
 	
-		if(flr(s.x)!=flr(player.x))then
-			if(
-			(flr(s.x)<flr(player.x)) 
-			and 
-			((flr(player.x)-flr(s.x))>1)
-			)then										
-					s.dx+= ac
-					s.d= "walking"					
-			elseif(
-			(flr(s.x)>flr(player.x)) 
-			and 
-			((flr(s.x)-flr(player.x))>1)
-			) then
-					s.dx-= ac
-					s.d= "walking"
-			end
-	elseif(flr(s.y)!=flr(player.y)) then
-			if(
-			(flr(s.y)<flr(player.y)) 
-			and 
-			((flr(player.y)-flr(s.y))>1)
-			)then
-					s.dy+= ac
-					s.d= "walking"
-			elseif(
-			(flr(s.y)>flr(player.y)) 
-			and 
-			((flr(s.y)-flr(player.y))>1)
-			) then
-					s.dy-= ac 
-					s.d= "walking"
-			end 
-	end
+		if(distance (player, s)>1) then	
+				if(player.x>s.x) then		
+						s.dx+= ac
+						s.d= "walking"			
+				elseif(player.x<s.x) then				
+						s.dx-= ac
+						s.d= "walking"				
+				elseif(flr(player.x)==flr(s.x)) then				
+						if(player.y>s.y) then					
+								s.dy+= 0.0005
+								s.d= "walking"					
+						elseif(player.y<s.y) then						
+								s.dy-= 0.0005
+								s.d= "walking"					
+						end
+						
+						if(rnd(100)<30) then
+								if(player.y>s.y) then					
+										s.y+= 2
+										s.x-= 2
+										s.d= "walking"					
+								elseif(player.y<s.y) then						
+										s.y-= 2
+										s.x+= 2
+										s.d= "walking"					
+								end
+						end
+									
+				end
+				
+				if(player.y>s.y) then		
+						s.dy+= ac
+						s.d= "walking"			
+				elseif(player.y<s.y) then				
+						s.dy-= ac
+						s.d= "walking"				
+				elseif(flr(player.y)==flr(s.y)) then				
+						if(player.x>s.x) then					
+								s.dx+= 0.0005
+								s.d= "walking"					
+						elseif(player.x<s.x) then						
+								s.dx-= 0.0005
+								s.d= "walking"					
+						end
+						
+						if(rnd(100)<70) then
+								if(player.x>s.x) then					
+										s.x+= 2
+										s.y-= 2
+										s.d= "walking"					
+								elseif(player.x<s.x) then						
+										s.x-= 2
+										s.y+= 2
+										s.d= "walking"					
+								end
+						end
+									
+				end
+		
+		elseif(distance (player, s)<2) then		
+			 
+			 if(flr(player.x)==flr(s.x)) then
+			 		if(player.x>s.x) then					
+								s.x+= 2
+								s.d= "walking"					
+						elseif(player.x<s.x) then						
+								s.x-= 2
+								s.d= "walking"					
+						end	 
+			 elseif(flr(player.y)==flr(s.y)) then
+			 		if(player.x>s.x) then					
+								s.x+= 2
+								s.d= "walking"					
+						elseif(player.x<s.x) then						
+								s.x-= 2
+								s.d= "walking"					
+						end
+			 end			 
+		end
+		
+		if(s.x<1 or s.x>14 or s.y<1 or s.y>14) then
+				s.x=7
+				s.y=2
+		end
 	
 	end
 	
 end
 
-function spawn_goblins(maxg)
-	local coso = (#mobs.goblins.alive)+(mobs.goblins.dead)
-	print(coso,6*8-2, 8*8)
-	if(maxg>(#mobs.goblins.alive)+(mobs.goblins.dead)) then
+function spawn_goblin()
+
 	goblin={
-		name="goblin a",
-	 x=14,
-	 y=7,
+		name="goblin",
+	 x=randomize_spawn("x"),
+	 y=randomize_spawn("y"),
 	 dx=0,
 	 dy=0,
 	 d="idle",
@@ -840,6 +1010,7 @@ function spawn_goblins(maxg)
   hp=5, --5
   dmg=1,
   dmg_cooldown=0,
+  hptrack=5,
   blood_color=3,
   anims={
 	  idle={fr=1,79},
@@ -847,11 +1018,9 @@ function spawn_goblins(maxg)
   }
  }
  
- goblin.number=(#mobs.goblins.alive)+(mobs.goblins.dead)+1
- 
  add(actor, goblin)
  add(mobs.goblins.alive, goblin)
-	end
+
 end
 
 function draw_goblin()
@@ -884,7 +1053,7 @@ function draw_goblin()
 	
 		spd=sqrt(g.dx*g.dx+g.dy*g.dy)
 		g.f= (g.f+spd*2) % g.anims[g.d].fr 
-		if (spd < 0.05) f=0
+		if (spd < 0.05) g.f=1
 	
 		------------cooldowns----------
 		--if(g.cooldown.attack1!=0) g.cooldown.attack1=g.cooldown.attack1-1
@@ -893,6 +1062,7 @@ function draw_goblin()
 	
 		--------draw sprite------------
 		if (g.hp>0) then
+			print(g.hp, g.x*8, g.y*8-10)
 			spr(g.anims[g.d][1+(flr(g.f))],
 	 		g.x*8-4,g.y*8-4, -- x,y (pixels)
 	 		1,1,g.d=="walking"    -- w,h, flip
@@ -913,10 +1083,10 @@ function draw_goblin()
 		-------------------------------		
 	
 		-----------draw blood--------
-		--if (hptrack.boss!=boss1.hp and boss1.hp>0) then
-		--			add_blood(boss1)
-		--			hptrack.boss=boss1.hp
-		--end	
+		if (g.hptrack>g.hp and g.hp>0) then
+					add_blood(g)
+					g.hptrack=g.hp
+		end
 		-----------------------------
 		
 	end
@@ -927,78 +1097,112 @@ function goblin_ia()
 
 	for g in all(mobs.goblins.alive) do
 	
-		if(flr(g.x)!=flr(player.x))then
-			if(
-			(flr(g.x)<flr(player.x)) 
-			and 
-			((flr(player.x)-flr(g.x))>3)
-			)then										
-					g.dx+= ac
-					g.d= "walking"					
-			elseif(
-			(flr(g.x)>flr(player.x)) 
-			and 
-			((flr(g.x)-flr(player.x))>3)
-			) then
-					g.dx-= ac
-					g.d= "walking"
-			end
-	elseif(flr(g.y)!=flr(player.y)) then
-			if(
-			(flr(g.y)<flr(player.y)) 
-			and 
-			((flr(player.y)-flr(g.y))>3)
-			)then
-					g.dy+= ac
-					g.d= "walking"
-			elseif(
-			(flr(g.y)>flr(player.y)) 
-			and 
-			((flr(g.y)-flr(player.y))>3)
-			) then
-					g.dy-= ac 
-					g.d= "walking"
-			end
-	elseif(flr(g.y)==flr(player.y)) then
-			if((player.d=="walkup" and player.x<g.x) or (player.d=="walkdown" and player.y>g.y)) then
-				if(
-				(flr(g.y)<flr(player.y)) 
-				and 
-				((flr(player.y)-flr(g.y))>1)
-				)then
-						g.dy+= ac
-						g.d= "walking"
-				elseif(
-				(flr(g.y)>flr(player.y)) 
-				and 
-				((flr(g.y)-flr(player.y))>1)
-				) then
-						g.dy-= ac 
-						g.d= "walking"
+		if(distance (player, g)>4) then	
+				if(player.x>g.x) then		
+						g.dx+= ac
+						g.d= "walking"			
+				elseif(player.x<g.x) then				
+						g.dx-= ac
+						g.d= "walking"				
+				elseif(flr(player.x)==flr(g.x)) then				
+						if(player.y>g.y) then					
+								g.dy+= 0.0005
+								g.d= "walking"					
+						elseif(player.y<g.y) then						
+								g.dy-= 0.0005
+								g.d= "walking"					
+						end
+						
+						--[[if(rnd(100)<30) then
+								if(player.y>g.y) then					
+										g.y+= 2
+										g.x-= 2
+										g.d= "walking"					
+								elseif(player.y<g.y) then						
+										g.y-= 2
+										g.x+= 2
+										g.d= "walking"					
+								end
+						end]]
+									
 				end
-			end			
-	elseif(flr(g.y)==flr(player.y)) then
-			if((player.d=="walkleft" and player.x<g.x) or (player.d=="walkright" and player.x>g.x)) then
-				if(
-				(flr(g.y)<flr(player.y)) 
-				and 
-				((flr(player.y)-flr(g.y))>1)
-				)then
+				
+				if(player.y>g.y) then		
 						g.dy+= ac
-						g.d= "walking"
-				elseif(
-				(flr(g.y)>flr(player.y)) 
-				and 
-				((flr(g.y)-flr(player.y))>1)
-				) then
-						g.dy-= ac 
-						g.d= "walking"
+						g.d= "walking"			
+				elseif(player.y<g.y) then				
+						g.dy-= ac
+						g.d= "walking"				
+				elseif(flr(player.y)==flr(g.y)) then				
+						if(player.x>g.x) then					
+								g.dx+= 0.0005
+								g.d= "walking"					
+						elseif(player.x<g.x) then						
+								g.dx-= 0.0005
+								g.d= "walking"					
+						end
+						
+						--[[if(rnd(100)<70) then
+								if(player.x>g.x) then					
+										g.x+= 2
+										g.y-= 2
+										g.d= "walking"					
+								elseif(player.x<g.x) then						
+										g.x-= 2
+										g.y+= 2
+										g.d= "walking"					
+								end
+						end]]
+									
 				end
-			end						 
-	end
+		
+		elseif(distance (player, g)<4) then		
+			 
+			 if(flr(player.x)==flr(g.x)) then
+			 		if(player.x>g.x) then
+			 		
+			 				if(player.d=="walkright") then
+			 						g.dx+= 0.9
+			 				elseif(rnd(100)<30) then
+			 						if(player.x<=12) g.x= player.x+2
+			 				end					
+				
+						elseif(player.x<g.x) then
+						
+								if(player.d=="walkleft") then
+			 						g.dx-= 0.9
+			 				elseif(rnd(100)<30) then
+			 						if(player.x>=3) g.x= player.x-2
+			 				end						
+					
+						end	 
+			 elseif(flr(player.y)==flr(g.y)) then
+			 		if(player.y>g.y) then
+			 		
+			 				if(player.d=="walkdown") then
+			 						g.dy+= 0.9
+			 				elseif(rnd(100)<30) then
+			 						if(player.y<=12) g.y= player.y+2
+			 				end						
+					
+						elseif(player.y<g.y) then	
+						
+								if(player.d=="walkup") then
+			 						g.dy-= 0.9
+			 				elseif(rnd(100)<30) then
+			 						if(player.y>=3) g.y= player.y-2
+			 				end						
+				
+						end
+			 end			 
+		end
+		
+		if(g.x<1 or g.x>14 or g.y<1 or g.y>14) then
+				g.x=7
+				g.y=2
+		end
 	
 	end
-	--if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
 	
 end
 
@@ -1265,9 +1469,15 @@ function boss1_ia()
 			end 
 	end
 	
+	if(boss1.x<1 or boss1.x>14 or boss1.y<1 or boss1.y>14) then
+				boss1.x=7
+				boss1.y=2
+	end
+	
 	if (sword.cooldown!=0) sword.cooldown=sword.cooldown-1
 	
 end
+
 -->8
 --scenes
 
@@ -1796,8 +2006,15 @@ function use_item(i)
 					itembox[player.item].cooldown=60
 			end
 	elseif(i=="bomb") then
+			--place bomb--
+			itembox.bomb.fuse=75
+			itembox[player.item].cooldown=450
+			--sspr( 0, 96, 32, 32, 16, 64, 32, 32 )
+			--------------
+			--bomb explode--
+			--sspr( 0, 96, 32, 32, 16, 64, 32, 32 )
+			----------------
 			
-			itembox[player.item].cooldown=120
 	elseif(i=="knife") then
 			
 			itembox[player.item].cooldown=120	
@@ -1808,7 +2025,7 @@ end
 -- weapons and attacks
 
 function draw_weapon()
-			
+					
 			----sprite and position--------
 			if (player.weapon=="spear") then
 			
@@ -1817,29 +2034,49 @@ function draw_weapon()
 						spear.x=player.x-2.5
  					spear.y=player.y
  				end
+ 				
+ 				spear.w=1
+ 				spear.h=0.5
+ 					
 					sprt=spear.sprt.h
 					switch=true
+					
 				elseif(player.d== "walkright") then
 					if(spear.cooldown==0) then
 						spear.x=player.x+0.1
 						spear.y=player.y+0.5
 					end
+					
+					spear.w=1
+ 				spear.h=0.5
+ 				
 					sprt=spear.sprt.h
 					switch=false
+					
 				elseif(player.d== "walkup") then
 					if(spear.cooldown==0) then
 						spear.x=player.x-1
  					spear.y=player.y-1.7
  				end
+ 				
+ 				spear.w=0.5
+ 				spear.h=1
+ 				
 					sprt=spear.sprt.vu
 					switch=false
+					
 				elseif(player.d== "walkdown") then
 					if(spear.cooldown==0) then
 						spear.x=player.x+0.6
  					spear.y=player.y+0.3
  				end
+ 				
+ 				spear.w=0.5
+ 				spear.h=1
+ 				
 					sprt=spear.sprt.vd
 					switch=true
+					
 				else
 					if(spear.cooldown==0) then
 						spear.x=player.x+0.6
@@ -1881,6 +2118,7 @@ function spear_attack()
 	 
 end
 
+
 -->8
 --helpers
 actual_sheet=1
@@ -1904,6 +2142,49 @@ function flip_sheet(num)
 	else
 		reload(0,0,0x2000,sheets[num])
 	end
+
+function draw_bomb()
+	if(itembox.bomb.fuse==75) then
+		posx=player.x*8
+		posy=player.y*8
+	end
+	if(itembox.bomb.fuse>0) then
+	
+		if(itembox.bomb.fuse%4==0) then
+		--normal bomb--
+			spr(itembox.bomb.bomb,posx,posy,2,2)
+		elseif((itembox.bomb.fuse%4)!=0) then
+		--primed bomb--
+			spr(itembox.bomb.primed,posx,posy,2,2)
+		end
+		itembox.bomb.fuse-=1
+	end
+		if((itembox.bomb.fuse==0)and((itembox[player.item].cooldown/100)-3.5>0)) then
+			if(itembox[player.item].cooldown%4==0) then
+				--explosion--
+				spr(itembox.bomb.explosion,posx-8,posy-8,4,4)
+				--explosion damage--
+				for a in all(actor) do
+					if(a.name=="dullahan") then
+						if (a.dmg_cooldown==0) then
+							if(((a.x<=(posx/8)+3)and(a.x>=(posx/8)-3))and(a.y<=(posy/8)+3)and(a.y>=(posy/8)-3)) then
+								a.hp=a.hp-0.5
+								a.dmg_cooldown=20	
+							end					
+						end
+					end
+					if not (a.name=="sword" or a.name=="spear" or a.name=="dullahan") then
+						if (a.dmg_cooldown==0) then
+							if(((a.x<=(posx/8)+3)and(a.x>=(posx/8)-3))and(a.y<=(posy/8)+3)and(a.y>=(posy/8)-3)) then
+								a.hp=a.hp-5
+								a.dmg_cooldown=20	
+							end					
+						end	
+					end
+				end
+			end
+		end
+
 end
 __gfx__
 00020028820022000020002882200002000000288220022000200028822000200000002882200020000000288220000200800808a808008000880808a8080008
@@ -1939,18 +2220,18 @@ __gfx__
 000222ff9ff22200000002ff9ff2ff20002ff2ff9ff2000000000081218000000000088112188000000008821158000000088821812888000000081181285580
 000002dd2dd20000000000222dd22200000222dd2220000000000081118000000000085581180000000008118558000000000811811800000000008881188800
 00000808a80800080000000000009000000000000000000000000000000000000000000202002222000002222200200000000000000000000000000000bbbb00
-08008a8a9a8a808800700000000a9900000000000000a000000000745700000000000000202255522020244442200200000000000000000000000000bb1bb1bb
-08808999b999808800770000000090000000000000779a000000077547700000000022000255525220024444444220000000000a70000000000000000bbbbbb0
-00808119b91180800076700000009000000000000770a00000000077770000000000200025662552022445555444200000400049a400040044455557003bb300
-00081111a11118000076700000009000000000007700000000000070b7000000000002025662652200247775555420000449047447404940454777700b4334b0
-000811882881180000767000000090000000000666600000000000700700000000002025662665200024780780542000044404b44b404440000000000b4444b0
-08081112221118000076700000009000000000555566000000000770077000000000025662665200002477777774202044944044440444440000000000400400
-880082112112800000767000000090000000055555566000000070bb00070000000025662665200002a44676764422005444545aa54544940000000000b00b00
-8808882111288808007a70000000900000000555555560000007bbbbbbbb700000a256626652200027ea476767442000544454ab7a45444400bbbb0000bbbb00
-08821165151112800998aa000000900000000555555560000007bbbbbbbb70000aa56626652000009e2a4404444200005494559bba554494bb1bb1bbbb1bb1bb
-00821152511112800099a000000090000000005555550000000733bbbb33700000a9626652020000299aa4004442000054440593ba5044440bbbbbb00bbbbbb0
-0081151525151180000a00000000a00000000005555000000000733333370000000ab665200000000229a7404742020055400559a5500444003bb300003bb300
-0085581115681180000a00000000a000000000000000000000000777777000000055a9520000000000027a400772002055400445555004440b4334bbbb433400
+08008a8a9a8a808800700000000a99000000000000000000000000745700000000000000202255522020244442200200000000000000000000000000bb1bb1bb
+08808999b9998088007700000000900000000000000a00000000077547700000000022000255525220024444444220000000000a70000000000000000bbbbbb0
+00808119b91180800076700000009000000000000779a00000000077770000000000200025662552022445555444200000400049a400040044455557003bb300
+00081111a1111800007670000000900000000000770a000000000070b7000000000002025662652200247775555420000449047447404940454777700b4334b0
+000811882881180000767000000090000000000770000000000000700700000000002025662665200024780780542000044404b44b404440000000000b4444b0
+08081112221118000076700000009000000000666600000000000770077000000000025662665200002477777774202044944044440444440000000000400400
+8800821121128000007670000000900000000dddd6600000000070bb00070000000025662665200002a44676764422005444545aa54544940000000000b00b00
+8808882111288808007a7000000090000000dddddd6600000007bbbbbbbb700000a256626652200027ea476767442000544454ab7a45444400bbbb0000bbbb00
+08821165151112800998aa00000090000000ddddddd600000007bbbbbbbb70000aa56626652000009e2a4404444200005494559bba554494bb1bb1bbbb1bb1bb
+00821152511112800099a000000090000000ddddddd60000000733bbbb33700000a9626652020000299aa4004442000054440593ba5044440bbbbbb00bbbbbb0
+0081151525151180000a00000000a00000000dddddd000000000733333370000000ab665200000000229a7404742020055400559a5500444003bb300003bb300
+0085581115681180000a00000000a000000000dddd00000000000777777000000055a9520000000000027a400772002055400445555004440b4334bbbb433400
 008558211128880000090000000a99000000000000000000000000000000000005440aaa00000000000024a77442020055400440054004440bb4440bb04444b0
 00088821811800000009000000aa899000000000000000000000000000000000554000a000000000000024477444200055500440054005440040400004000400
 0000081188800000000900000007a700000000000000000000000000000000005400000000000000000024444a444200055000440440054000b30000b0000b00
@@ -1988,55 +2269,55 @@ __gfx__
 77571772555005560400004050000006000000000405555555555040000000000000000000000000000000000000000071656172712521722562665225626652
 000000000000000000000000000000000000000006555565555555605555556555565560777777702222222222222222117a7112112521122562665225662652
 000000000000000000000000000000000000000060655565555556065555556566665560bbbbbbb777171772771717727998aa72712521722566265225626652
-600000000000000600000000088888000000000056065565555560655555556555565560bbbbbbb77111a172716461721199a112112521122562665225662652
-600000000000000600b00000888998800000000055606666666606556666666655565560bbbbbbb7111611121116111271191172712521722566265225626652
-56000000000000658bb8448889999990000000005556065555606555555655555556666077777770715551727166617277191772771217722562665225662652
-56000000000000658bb444bb899999990000000055566065560665555556555555565560000000001155511216bbb61222222222222222222566265225626652
-6660000000000666b884bb8809909999000000005556560660656666666666665556556000000000715551727166617200000000000000002562665225662652
-0000000000000000088888800900899aa0000000555655600655655500000000555655600000000077171772771717720000000000000000256626520269a620
-007ccc00000000000000000000099aa999000000555655600655655500000000065565550777777700000a0a02222222222222222222000025626652a09b7a0a
-07ccccc0007ccc000000000000899a9448990000666656066065655566666666065565557bbbbbbb00000092255555555555555555552200256626520993b990
-0cccccc007ccccc00000000000800f9488490000555660655606655555556555065565557bbbbbbb0000009966666666666666666666552025626652a009900a
-00cccc000cccccc0007ccc00008008f0ff110000555606555560655555556555066665557bbbbbbb9545493b9626262626262626262626522566265200045000
-000000000cccccc007ccccc00000f8f0111000005560666666660655666666660655655507777777a45459b7a262626262626262626266520252652000054000
-0000000001cccc1001cccc1000008f001800000056065555565560655655555506556555000000000000009a6666666666666666666655200256652000045000
-011111100011110000111100000f8f0018811d006065555556555606565555550655666600000000000000922555555555555555555522000025520000054000
-00111100000000000000000000fff00001181d00065555555655556056555555065565550000000000000a0a022222222222222222220000000220000009a000
-000000000000000000000000000000000000000000000000808888808000008002a2002aa2002a20000000000000000088808282a28280881111111122222222
-0000000000000050505000000000000077777000000000000825626808088008029a22a99a22a920000a00000000000088882a2a9a2a28881111111122222222
-00000000000000a5a5a000000000000076777700000000008825662880882808029999999999992000099000099a000008882999b99928881111111122222222
-00000000000000aabaa0000000000000766777700000000088256268088528800299999b79999920000110000090100000882119b91128801111111122222222
-0000000000000e99b99eee00000000007566777700000000082566288865288002eee993b99eee20001111000001100000821111a11118801111111122222222
-000000000000eeeeeeeeeee000000000755667777000000008256288088528002eeeee9339eeeee2001100000111000080821188288112801111111122222222
-000000000000eeeeeeeeeeee00000000775566777090000008258880008828002eeee2a99a22eee2001110000120000088821112221112881111111122222222
-00000000000ee22ee22eeeee00000000077556997790000000888000000880002ee22ffaaff2eee2000211000000000088088211211288881111111122222222
-00000090000ee2f22f22eeee0000000000775987990000008800000000008800eee2f88ff88f2eee000000000000000088881821112818884444444488888888
-0000004000000fffffff222e0000000000077928900000001180000000000080eee2f82ff28f2eee000001000000000088821165151112884444444488888888
-0000004500000f0ff0ff2f2e0000000000007799900000002218000000800828ee22ffffffff2eee000001100000000088821152511112884444444488888888
-0000054500000f0ff0fffa2e0000000000000790990000002218000008008528ee29ffffffff92ee000001000000000008211515251511284444444488888888
-0000054500000effffef2aeee000000000009900099000001121880008886528ee22fff88fff22ee000000000000000008211211156211284444444488888888
-000f054500000ff88ff2eeeee000000000000000009900008112158000826580ee212ffffff212ee000000000000000000255821112855284444444488888888
-00aaf4440ff0000ff22e11eee000000000000000000990000811555800886580222112ffff2112e2000000000000000000822821212822804444444488888888
-00faaaaaa55511111111111eee000000000000000000990000855580000888002211111111111122000000000000000000088211211288004444444488888888
-00aa9ab995f555111111111eeee000000000000000000990000888000800000000800808a808008008080808a808888022222222777777776666666699999999
-000f562655fff551111111eeeee000000000000000000099000000008000008008808a8a9a8a808808888a8a9a8a880855555500777777776666666699999999
-00005626555fff5111fffeeeee0000000000000000000009000000008800000808808999b9998088088889999999888866665000777777776666666699999999
-000056265f555fff1ffffeeee00000000000000000000000000000000888808000808ee9b9ee808000888ee999ee888826262000777777776666666699999999
-000005265fff55ffffff000000000000000000000000000000000000825628000008eeffaffee8000088ee2eaeeee80062650000777777776666666699999999
-000000565555ff5fff55000000000000000000000000000000000000825662808008e270f70fe8000088ee2eeeeee80066500000777777776666666699999999
-00000056500000f555ff0000000000000000000000000000000000008258888088082fffffffe80888882e2eeeee288855000000777777776666666699999999
-000005265000011f11f10000000000000000000000000000000000000880000088008afffffe8088888882e22222888820000000777777776666666699999999
-0000052650000f11111ff000000000000000000000000000000000000000000008081821f12818088888181121181888ccccccccffffffff55555555aaaaaaaa
-000055265000ff111fffff00000000000000000000000000000000000000000000821165151112800882111115711288ccccccccffffffff55555555aaaaaaaa
-00005626500ffff1ffffff00000000000000000000000000000000000000000000821152511112800882111152511288ccccccccffffffff55555555aaaaaaaa
-0000562650ffff5ffffff000000000000000000000000000000000000000000000811515251511800881155525151188ccccccccffffffff55555555aaaaaaaa
-0000562655fff5ffffff000ff00000000000000000000000000000000000000000811811156811800881187551181188ccccccccffffffff55555555aaaaaaaa
-000056265fff5fffff550ffff00000000000000000000000000000000000000000855821112855800885582111285588ccccccccffffffff55555555aaaaaaaa
-050055255ff5fffff5fff5ffff0000000000000000000000000000000000000000088821812888000088882181288880ccccccccffffffff55555555aaaaaaaa
-066505550fff5ffffffffff00f0000000000000000000000000000000000000000000811811800000008881181188800ccccccccffffffff55555555aaaaaaaa
+60000000000000060000000000000000000a000056065565555560655555556555565560bbbbbbb77111a172716461721199a112112521122562665225662652
+600000000000000600b00000000000000779a00055606666666606556666666655565560bbbbbbb7111611121116111271191172712521722566265225626652
+56000000000000658bb8448800000000770a0000555606555560655555565555555666607777777071ddd1727166617277191772771217722562665225662652
+56000000000000658bb444bb0000000770000000555660655606655555565555555655600000000011ddd11216bbb61222222222222222222566265225626652
+6660000000000666b884bb880000009999000000555656066065666666666666555655600000000071ddd1727166617200000000000000002562665225662652
+00000000000000000888888000000aaaa9900000555655600655655500000000555655600000000077171772771717720000000000000000256626520269a620
+007ccc0000000000000000000000aaaaaa990000555655600655655500000000065565550777777700000a0a02222222222222222222000025626652a09b7a0a
+07ccccc0007ccc00000000000000aaaaaaa90000666656066065655566666666065565557bbbbbbb00000092255555555555555555552200256626520993b990
+0cccccc007ccccc0000000000000aaaaaaa90000555660655606655555556555065565557bbbbbbb0000009966666666666666666666552025626652a009900a
+00cccc000cccccc0007ccc0000000aaaaaa00000555606555560655555556555066665557bbbbbbb9545493b9626262626262626262626522566265200045000
+000000000cccccc007ccccc0000000aaaa0000005560666666660655666666660655655507777777a45459b7a262626262626262626266520252652000054000
+0000000001cccc1001cccc10000000000000000056065555565560655655555506556555000000000000009a6666666666666666666655200256652000045000
+01111110001111000011110000000000000000006065555556555606565555550655666600000000000000922555555555555555555522000025520000054000
+0011110000000000000000000000000000000000065555555655556056555555065565550000000000000a0a022222222222222222220000000220000009a000
+0000000000000000000000000a0000000000000000000000808888808000008002a2002aa2002a20000000000000000088808282a28280881111111122222222
+000000000000000000008000a000000077777000000000000825626808088008029a22a99a22a920000a00000000000088882a2a9a2a28881111111122222222
+0000000000a000008000000a0000000076777700000000008825662880882808029999999999992000099000099a000008882999b99928881111111122222222
+0000008000a00008a80000aa00000000766777700000000088256268088528800299999b79999920000110000090100000882119b91128801111111122222222
+00000000000a0088a88000a0000000007566777700000000082566288865288002eee993b99eee20001111000001100000821111a11118801111111122222222
+00000008080a008888800aa000000000755667777000000008256288088528002eeeee9339eeeee2001100000111000080821188288112801111111122222222
+000080008888a898a898aaa008000000775566777090000008258880008828002eeee2a99a22eee2001110000120000088821112221112881111111122222222
+00a000888888a988a889aa880000a000077556997790000000888000000880002ee22ffaaff2eee2000211000000000088088211211288881111111122222222
+000a00088989aa99aa9aaa98800a000000775987990000008800000000008800eee2f88ff88f2eee000000000000000088881821112818884444444488888888
+000aaa888899aaaaaaaaaa998aa0000000077928900000001180000000000080eee2f82ff28f2eee000001000000000088821165151112884444444488888888
+0000aaaaa99aaaa88aaaaaaaaaa0000000007799900000002218000000800828ee22ffffffff2eee000001100000000088821152511112884444444488888888
+00000aaaaaaaa88978a88aaaaa80080000000790990000002218000008008528ee29ffffffff92ee000001000000000008211515251511284444444488888888
+080008aaaaaaa897898778aaa888000800009900099000001121880008886528ee22fff88fff22ee000000000000000008211211156211284444444488888888
+0000888aaa88a7887899978aa988800000000000009900008112158000826580ee212ffffff212ee000000000000000000255821112855284444444488888888
+00088889aa8779879888998aa998800000000000000990000811555800886580222112ffff2112e2000000000000000000822821212822804444444488888888
+00888899aaa89889997898aaaaa80000000000000000990000855580000888002211111111111122000000000000000000088211211288004444444488888888
+00088889aaa8989998898aaaaaaa99000000000000000990000888000800000000800808a808008008080808a808888022222222777777776666666699999999
+0800888aaa877879978998aaaaaaaaaa0000000000000099000000008000008008808a8a9a8a808808888a8a9a8a880855555500777777776666666699999999
+000008aaaa8799887989778aaaaaa8000000000000000009000000008800000808808999b9998088088889999999888866665000777777776666666699999999
+0000aaaaaaa88999889978aaaaa980000000000000000000000000000888808000808ee9b9ee808000888ee999ee888826262000777777776666666699999999
+00aaaaaaaaaaa879998988aaa9988000000000000000000000000000825628000008eeffaffee8000088ee2eaeeee80062650000777777776666666699999999
+aa008889aaaaa8779988aaaa98880000000000000000000000000000825662808008e270f70fe8000088ee2eeeeee80066500000777777776666666699999999
+0000088a9aaaaa8798a8aaaa988800000000000000000000000000008258888088082fffffffe80888882e2eeeee288855000000777777776666666699999999
+000008888aaaaaa88aaaaaaa98000a000000000000000000000000000880000088008afffffe8088888882e22222888820000000777777776666666699999999
+00008008aaa9aaaaaaaa99aaa00000000000000000000000000000000000000008081821f12818088888181121181888ccccccccffffffff55555555aaaaaaaa
+000000000899aaaa9aaa9888a00900000000000000000000000000000000000000821165151112800882111115711288ccccccccffffffff55555555aaaaaaaa
+000000008888aaa989aa88800a0000000000000000000000000000000000000000821152511112800882111152511288ccccccccffffffff55555555aaaaaaaa
+000000000888aa8888aa888000a000000000000000000000000000000000000000811515251511800881155525151188ccccccccffffffff55555555aaaaaaaa
+000000008080aa88888a0000000000000000000000000000000000000000000000811811156811800881187551181188ccccccccffffffff55555555aaaaaaaa
+000000000000a008880a0008000000000000000000000000000000000000000000855821112855800885582111285588ccccccccffffffff55555555aaaaaaaa
+000000000000a0008000a000000000000000000000000000000000000000000000088821812888000088882181288880ccccccccffffffff55555555aaaaaaaa
+00000000000a000000000000000000000000000000000000000000000000000000000811811800000008881181188800ccccccccffffffff55555555aaaaaaaa
 __gff__
 0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000002020000000200000000000000000000000000000000020000000000000000000000
-0000020200000000000000000000000200020202000202000000000000000006020200000000000202000000000002000202000000000002020000000202020000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+0000020200000000000000000000000200020202000202000000000000000006020200000000000202000000000002000202000000000002020000000202020002020202000000000000000000000000020202020000000000000000000000000202020200000000000000000000000002020202000000000000000000000000
 __map__
 a58182a7a7a7a7a0a1a7a7a7a78586a600000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c000000000fecfcffececececec0c0ceceeefefefe00000000cececececececececececececececece0000000000000000c0c0c0c0c0c0dfcfdfcfc0c0cfcfc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
 a89192808080808080808080809596b800000000000000000000000000000000c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c000000000cfcececfc0c0c0c0c0c0c0ceeeeeeeee00000000cefefefeeeeefececfcfcfcfcfcfcfce0000000000000000c0cfcfc0dfdfdfdfcfdfdfdfdfc0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0
