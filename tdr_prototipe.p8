@@ -21,7 +21,7 @@ mobs = {
 }
 
 scene= {
-	number=0,
+	number=1,
 	running=true,
 	timer=5000,
 	xcounter=0,
@@ -1485,6 +1485,24 @@ end
 -->8
 --scenes
 
+scene0={
+		dialog1={
+			txt={".", ".","."},
+ 	 dur=500,
+ 	 author=player
+		},
+		dialog2={
+			txt={"que es esto?..."},
+ 	 dur=500,
+ 	 author=player
+		},
+		dialog3={
+			txt={"donde diablos estoy..."},
+ 	 dur=500,
+ 	 author=player
+		}
+}
+
 scene1={
 		dialog1={
 			txt={"que es esta sensacion ?", "...algo se acerca"},
@@ -1547,27 +1565,18 @@ function draw_scene(n)
 
 	if(n==0) then     --initial scene
 		
-		local aux = (scene.timer-4990)/3 -- era (scene.timer-4990)
-		local extra = ((aux)/(1000/aux))
+		--local aux = (scene.timer-4990)/3 -- era (scene.timer-4990)
+		--local extra = ((aux)/(1000/aux))
 		
 		cls()
-		if (scene.timer==4990) then
-				addwind(3*8-5, 12*8, 91, 30, scene1.dialog1.txt, "player")
-		end
 		--map(52, 0, 0, 0, 16, 16)
-		
-		---------dialogs--------------
-		--addwind(4*8, 12*8, 48, 20, {"linea1", "linea2"})
-		--draw_scene_textbox(scene1)
-		--showmsg("hola", 1)
-
 		if (scene.timer==4990) then
-				addwind(3*8-5, 12*8, 91, 30, scene1.dialog1.txt, "player")
+				addwind(3*8-5, 12*8, 91, 30, scene0.dialog1.txt, "player")
 		elseif(scene.xcounter==1) then
 				del( wind, wind[1] )
-				addwind(3*8-5, 12*8, 91, 30, scene1.dialog2.txt, "boss")
+				addwind(3*8-5, 12*8, 91, 30, scene0.dialog2.txt, "player")
 							
-				if(extra<15)then
+				--[[if(extra<15)then
 		 
 			 	if(extra+2>=8) then
 						extra=6
@@ -1584,7 +1593,7 @@ function draw_scene(n)
 						--jefe
 						sspr( 96, 96, 16, 16, 50, 8, 64, 64 )
 				end
-				 			
+				]]		
 		elseif(scene.xcounter==2) then
 				--jefe
 				sspr( 96, 96, 16, 16, 50, 8, 64, 64 )
