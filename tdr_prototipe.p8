@@ -11,33 +11,33 @@ blood = {}		-- table with blood splatters and their positon
 drops = {}  -- table with drops and their positon
 
 mobs = {
- goblins= {
+ goblin= {
  	alive= {},
  	dead= 0,
  	drops={
- 		bomb{
+ 		bomb={
  			prob=1,
  			item="apple",
  		},
- 		knife{
+ 		knife={
  			prob=10,
  			item="potion",
  		},
  	},
  },
- slimes= {
+ slime= {
  	alive= {},
  	dead= 0,
  	drops={
- 		apple{
+ 		apple={
  			prob=10,
  			item="apple",
  		},
- 		potion{
+ 		potion={
  			prob=2,
  			item="potion",
  		},
- 		drumstick{
+ 		drumstick={
  			prob=5,
  			item="drumstick",
  		},		
@@ -161,11 +161,11 @@ function _init()
  		cooldown=0
  	},
  	potion={
- 		sprt=171,
+ 		sprt=70,
  		cooldown=0
  	},
  	bomb={
- 		sprt=170,
+ 		sprt=68,
  		bomb=68,
  		primed=163,
  		explosion=192,
@@ -173,7 +173,7 @@ function _init()
  		fuse=0
  	},
  	knife={
- 		sprt=144,
+ 		sprt=104,
  		cooldown=0
  	},
  	apple={
@@ -448,29 +448,6 @@ end
 
 function draw_blood()
 
---[[	for y=0,127 do
-  for x=0,127 do
-    pset(x, y, x*y/8)
-  end
-	end]]
-	--flr(rnd(6)) + 1
-	
-	--pset(a.x+flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, a.blood_color)
-	--pset(a.x-flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, a.blood_color)
-	--pset(a.x+flr(rnd(2)) + 1, a.y-flr(rnd(2)) + 1, a.blood_color)
-	--pset(a.x-flr(rnd(2)) + 1, a.y+flr(rnd(2)) + 1, a.blood_color)
-	
-	--rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
-	--rectfill2((a.x-flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1, 1, 8)
-	--rectfill2((a.x+flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1, 1, 8)
-	--rectfill2((a.x-flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1, 1, 8)
-	
-	--bswitch= rnd({true, false})
-	--spr(117, (a.x+flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1,1,bswitch)
-	--spr(117, (a.x-flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1,1,bswitch)
-	--spr(117, (a.x+flr(rnd(2)) + 1)*8, (a.y-flr(rnd(2)) + 1)*8, 1,1,bswitch)
-	--spr(117, (a.x-flr(rnd(2)) + 1)*8, (a.y+flr(rnd(2)) + 1)*8, 1,1,bswitch)
-	
 	for b in all(blood) do
 			spr(117, b.x, b.y, 1, 1, b.switch)
 	end
@@ -546,7 +523,8 @@ function solid_actor(a, dx, dy)
 						
 						--deals damage to the mob
 						a.hp=a.hp-a2.dmg
-						a.dmg_cooldown=20						
+						a.dmg_cooldown=20
+												
 					end	
 				end
 				-- moving together?
@@ -687,28 +665,41 @@ end
 --mobs and bosses and drops
 
 function drop (mob)
-
-	if(mob=="slime") then
-			local drop= rnd({"apple", "potion", "drumstick"})
-	elseif(mob=="goblin")
-			local drop= rnd({"bomb", "knife"})
-	end
-
- if (rnd(100) < mobs.drops[drop].prob) then
-		-- add drop to spawned drops
-		drop={
-			x=mob.x,
-			y=mob.y,
-			item=mobs.drops[drop].item,
-		}
-		add(drops, drop)
-	end
-end
-
-function spawnear_item (item)
-
- add(drops, )
 	
+	local num=0
+	local drop="empty"
+	
+	if(mob.name=="slime") then
+			num= rnd({1, 2, 3})
+			if(num==1) then
+					drop="apple"
+			elseif(num==2) then
+					drop="potion"
+			elseif(num==3) then
+					drop="drumstick"
+			end		
+	elseif(mob.name=="goblin") then
+			num= rnd({1, 2})
+			if(num==1) then
+					drop="bomb"
+			elseif(num==2) then
+					drop="knife"
+			end							
+	end
+	
+	print(mob.name)
+	print(drop)
+
+ if (rnd(100) < mobs[mob.name].drops[drop].prob) then
+			-- add drop to spawned drops
+			drop={
+				x=mob.x,
+				y=mob.y,
+				item=mobs[mob.name].drops[drop].item,
+			}		
+			add(drops, drop)			
+	end
+ 
 end
 
 function randomize_spawn(coord)
@@ -730,57 +721,57 @@ end
 
 function spawn_mobs()
 
-	if(mobs.slimes.dead<3 and scene.running==false) then	
+	if(mobs.slime.dead<3 and scene.running==false) then	
 	
 			--spawn_slime(3)
-			if(#mobs.slimes.alive<3 and mobs.slimes.dead==0) spawn_slime()
+			if(#mobs.slime.alive<3 and mobs.slime.dead==0) spawn_slime()
 			print("s v: ", 10*8, 0, 9)
-			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print(#mobs.slime.alive, 13*8, 0, 9)
 			print("s m: ", 10*8, 8, 9)
-			print(mobs.slimes.dead, 13*8, 8, 9)
+			print(mobs.slime.dead, 13*8, 8, 9)
 			print("g v: ", 10*8, 16, 9)
-			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print(#mobs.goblin.alive, 13*8, 16, 9)
 			print("g m: ", 10*8, 24, 9)
-			print(mobs.goblins.dead, 13*8, 24, 9)			
+			print(mobs.goblin.dead, 13*8, 24, 9)			
 			
-	elseif(mobs.slimes.dead>=3 and mobs.slimes.dead<9 and scene.running==false) then
+	elseif(mobs.slime.dead>=3 and mobs.slime.dead<9 and scene.running==false) then
 			
-			if(#mobs.slimes.alive<6 and mobs.slimes.dead==3) spawn_slime()
+			if(#mobs.slime.alive<6 and mobs.slime.dead==3) spawn_slime()
 			print("s v: ", 10*8, 0, 9)
-			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print(#mobs.slime.alive, 13*8, 0, 9)
 			print("s m: ", 10*8, 8, 9)
-			print(mobs.slimes.dead, 13*8, 8, 9)
+			print(mobs.slime.dead, 13*8, 8, 9)
 			print("g v: ", 10*8, 16, 9)
-			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print(#mobs.goblin.alive, 13*8, 16, 9)
 			print("g m: ", 10*8, 24, 9)
-			print(mobs.goblins.dead, 13*8, 24, 9)
+			print(mobs.goblin.dead, 13*8, 24, 9)
 	
-	elseif(mobs.slimes.dead>=9 and mobs.slimes.dead<17 and mobs.goblins.dead<2 and scene.running==false) then
+	elseif(mobs.slime.dead>=9 and mobs.slime.dead<17 and mobs.goblin.dead<2 and scene.running==false) then
 	
-			if(#mobs.goblins.alive<2 and mobs.goblins.dead==0) spawn_goblin()
-			if(#mobs.slimes.alive<8 and mobs.slimes.dead==9) spawn_slime()
+			if(#mobs.goblin.alive<2 and mobs.goblin.dead==0) spawn_goblin()
+			if(#mobs.slime.alive<8 and mobs.slime.dead==9) spawn_slime()
 			print("s v: ", 10*8, 0, 9)
-			print(#mobs.slimes.alive, 13*8, 0, 9)
+			print(#mobs.slime.alive, 13*8, 0, 9)
 			print("s m: ", 10*8, 8, 2)
-			print(mobs.slimes.dead, 13*8, 8, 9)
+			print(mobs.slime.dead, 13*8, 8, 9)
 			print("g v: ", 10*8, 16, 9)
-			print(#mobs.goblins.alive, 13*8, 16, 9)
+			print(#mobs.goblin.alive, 13*8, 16, 9)
 			print("g m: ", 10*8, 24, 9)
-			print(mobs.goblins.dead, 13*8, 24, 9)
+			print(mobs.goblin.dead, 13*8, 24, 9)
 			
 			
-	elseif(mobs.goblins.dead>=2 and mobs.slimes.dead>=17 and mobs.slimes.dead<18 and  mobs.goblins.dead<8 and scene.running==false) then
+	elseif(mobs.goblin.dead>=2 and mobs.slime.dead>=17 and mobs.slime.dead<18 and  mobs.goblin.dead<8 and scene.running==false) then
 			
-			if(#mobs.goblins.alive<6 and mobs.goblins.dead==2) spawn_goblin()
-			if(#mobs.slimes.alive<1 and mobs.slimes.dead==17) spawn_slime()
+			if(#mobs.goblin.alive<6 and mobs.goblin.dead==2) spawn_goblin()
+			if(#mobs.slime.alive<1 and mobs.slime.dead==17) spawn_slime()
 			print("oleada 4 ", 10*8, 0)
 	
-	elseif(mobs.goblins.dead>=8 and mobs.slimes.dead>=18 and mobs.goblins.dead<18 and scene.running==false) then
+	elseif(mobs.goblin.dead>=8 and mobs.slime.dead>=18 and mobs.goblin.dead<18 and scene.running==false) then
 	
-			if(#mobs.goblins.alive<10 and mobs.goblins.dead==8) spawn_goblin()
+			if(#mobs.goblin.alive<10 and mobs.goblin.dead==8) spawn_goblin()
 			print("oleada 5 ", 10*8, 0)
 	
-	elseif(mobs.goblins.dead>=18 and scene.running==false) then				
+	elseif(mobs.goblin.dead>=18 and scene.running==false) then				
 			
  		-- create & draw the boss
  		if (boss.alive==false) then
@@ -839,59 +830,13 @@ function spawn_slime()
  }
  
  add(actor, slime)
- add(mobs.slimes.alive, slime)
+ add(mobs.slime.alive, slime)
 		
 end
 
---[[
-function spawn_slime(maxs)
-	local coso = (#mobs.slimes.alive)+(mobs.slimes.dead)
-	
-	if(maxs>((#mobs.slimes.alive)+(mobs.slimes.dead))) then
-	
-	slime={
-		name="slime",
-	 x=randomize_spawn("x"),
-	 y=randomize_spawn("y"),
-	 dx=0,
-	 dy=0,
-	 d="idle",
-  sh=1,
-  sw=1,
-  --------------
-  bounce=2,
-  -- half-width and half-height
-		-- slightly less than 0.5 so
-		-- that will fit through 1-wide
-		-- holes.
-		w=0.5,
-		h=0.5,
-  -------------
-  f=0,
-  hp=2, --5
-  dmg=1,
-  dmg_cooldown=0,
-  hptrack=2,
-  blood_color=3,
-  anims={
-	  idle={fr=1,178},
-			walking={fr=3,178,177,176},
-  }
- }
- 
- slime.number=(#mobs.slimes.alive)+(mobs.slimes.dead)+1
- 
- add(actor, slime)
- add(mobs.slimes.alive, slime)
- 
-	end
-	
-end
-]]
-
 function draw_slime()
 
-	for s in all(mobs.slimes.alive) do
+	for s in all(mobs.slime.alive) do
 		
 		ac=0.02 -- acceleration
 		
@@ -936,10 +881,10 @@ function draw_slime()
 	 		1,1,s.d=="walking"    -- w,h, flip
 			)	
 		else
-		del(mobs.slimes.alive,s)
+		del(mobs.slime.alive,s)
 		del(actor,s)
 		
-		mobs.slimes.dead+=1
+		mobs.slime.dead+=1
 			--sprite cadaver goblin-------
 			--[[
 			spr(192,
@@ -970,7 +915,7 @@ end
 
 function slime_ia()
 
-	for s in all(mobs.slimes.alive) do
+	for s in all(mobs.slime.alive) do
 	
 		if(distance (player, s)>1) then	
 				if(player.x>s.x) then		
@@ -1094,13 +1039,13 @@ function spawn_goblin()
  }
  
  add(actor, goblin)
- add(mobs.goblins.alive, goblin)
+ add(mobs.goblin.alive, goblin)
 
 end
 
 function draw_goblin()
 
-	for g in all(mobs.goblins.alive) do
+	for g in all(mobs.goblin.alive) do
 		
 		ac=0.1 -- acceleration
 		
@@ -1143,10 +1088,10 @@ function draw_goblin()
 	 		1,1,g.d=="walking"    -- w,h, flip
 			)	
 		else
-		del(mobs.goblins.alive,g)
+		del(mobs.goblin.alive,g)
 		del(actor,g)
 		
-		mobs.goblins.dead+=1
+		mobs.goblin.dead+=1
 			--sprite cadaver goblin-------
 			--[[
 			spr(192,
@@ -1170,7 +1115,7 @@ end
 
 function goblin_ia()
 
-	for g in all(mobs.goblins.alive) do
+	for g in all(mobs.goblin.alive) do
 	
 		if(distance (player, g)>4) then	
 				if(player.x>g.x) then		
@@ -2174,6 +2119,9 @@ function draw_drops()
 
 for d in all(drops) do
 			spr(itembox[d.item].sprt, d.x, d.y, 2, 2)
+			if(player.x==d.x and player.y==d.y) then			
+					del(drops, d)		
+			end
 end
 
 end
