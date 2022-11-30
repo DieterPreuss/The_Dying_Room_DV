@@ -16,13 +16,13 @@ mobs = {
  	dead= 0,
  	drops={
  		bomb={
- 			prob=1,
+ 			prob=100,
  			item="apple",
  		},
- 		knife={
+ 		--[[knife={
  			prob=10,
  			item="potion",
- 		},
+ 		},]]
  	},
  },
  slime= {
@@ -119,7 +119,7 @@ function _init()
  
  add(actor, spear)
  
- --create knife
+ --[[create knife
  knife={
  	name="knife",
  	x=18,
@@ -135,7 +135,7 @@ function _init()
  	},
  }
  
- add(actor, knife)
+ add(actor, knife)]]
  
  healthbar={
  	--ten={},
@@ -157,27 +157,29 @@ function _init()
  		cooldown=0
  	},
  	drumstick={
- 		sprt=110,
+ 		sprt={137,110},
  		cooldown=0
  	},
  	potion={
- 		sprt=70,
+ 		sprt={
+ 		171,70
+ 		},
  		cooldown=0
  	},
  	bomb={
- 		sprt=68,
- 		bomb=68,
- 		primed=163,
+ 		sprt={
+ 		170,68,163
+ 		},
  		explosion=192,
  		cooldown=0,
  		fuse=0
  	},
- 	knife={
- 		sprt=104,
+ 	--[[knife={
+ 		sprt={137,104},
  		cooldown=0
- 	},
+ 	},]]
  	apple={
- 		sprt=102,
+ 		sprt={137,102},
  		cooldown=0
  	}
  }
@@ -279,7 +281,7 @@ function _draw()
 	
 			draw_weapon()
 			
-			draw_drops()
+			--draw_drops()
 		
 			draw_bomb()
 	
@@ -399,7 +401,10 @@ function _update()
 			
 			--allows the collection of items
 			collect_item()
-			
+	elseif(scene.number==0 and scene.timer==0) then
+			scene.xcounter=0
+			del( wind, wind[1] )
+			--run()		
 	elseif(scene.number==1 and scene.timer==0) then
 			scene.xcounter=0
 			del( wind, wind[1] )
@@ -517,9 +522,11 @@ function solid_actor(a, dx, dy)
 					if (a.dmg_cooldown==0) then
 						
 						--drops item if corresponds
+						--[[
 						if((a.name=="goblin" or a.name=="slime") and (a.hp-1==0)) then
 								drop(a)
 						end
+						]]
 						
 						--deals damage to the mob
 						a.hp=a.hp-a2.dmg
@@ -679,12 +686,14 @@ function drop (mob)
 					drop="drumstick"
 			end		
 	elseif(mob.name=="goblin") then
-			num= rnd({1, 2})
-			if(num==1) then
+			--num= rnd({1, 2})
+			drop="bomb"
+			--[[if(num==1) then
 					drop="bomb"
 			elseif(num==2) then
 					drop="knife"
-			end							
+			
+			end	]]						
 	end
 	
 	print(mob.name)
@@ -725,7 +734,7 @@ function spawn_mobs()
 	
 			--spawn_slime(3)
 			if(#mobs.slime.alive<3 and mobs.slime.dead==0) spawn_slime()
-			print("s v: ", 10*8, 0, 9)
+			--[[print("s v: ", 10*8, 0, 9)
 			print(#mobs.slime.alive, 13*8, 0, 9)
 			print("s m: ", 10*8, 8, 9)
 			print(mobs.slime.dead, 13*8, 8, 9)
@@ -733,11 +742,11 @@ function spawn_mobs()
 			print(#mobs.goblin.alive, 13*8, 16, 9)
 			print("g m: ", 10*8, 24, 9)
 			print(mobs.goblin.dead, 13*8, 24, 9)			
-			
+			]]
 	elseif(mobs.slime.dead>=3 and mobs.slime.dead<9 and scene.running==false) then
 			
 			if(#mobs.slime.alive<6 and mobs.slime.dead==3) spawn_slime()
-			print("s v: ", 10*8, 0, 9)
+			--[[print("s v: ", 10*8, 0, 9)
 			print(#mobs.slime.alive, 13*8, 0, 9)
 			print("s m: ", 10*8, 8, 9)
 			print(mobs.slime.dead, 13*8, 8, 9)
@@ -745,12 +754,12 @@ function spawn_mobs()
 			print(#mobs.goblin.alive, 13*8, 16, 9)
 			print("g m: ", 10*8, 24, 9)
 			print(mobs.goblin.dead, 13*8, 24, 9)
-	
+			]]
 	elseif(mobs.slime.dead>=9 and mobs.slime.dead<17 and mobs.goblin.dead<2 and scene.running==false) then
 	
 			if(#mobs.goblin.alive<2 and mobs.goblin.dead==0) spawn_goblin()
 			if(#mobs.slime.alive<8 and mobs.slime.dead==9) spawn_slime()
-			print("s v: ", 10*8, 0, 9)
+			--[[print("s v: ", 10*8, 0, 9)
 			print(#mobs.slime.alive, 13*8, 0, 9)
 			print("s m: ", 10*8, 8, 2)
 			print(mobs.slime.dead, 13*8, 8, 9)
@@ -758,18 +767,16 @@ function spawn_mobs()
 			print(#mobs.goblin.alive, 13*8, 16, 9)
 			print("g m: ", 10*8, 24, 9)
 			print(mobs.goblin.dead, 13*8, 24, 9)
-			
+			]]
 			
 	elseif(mobs.goblin.dead>=2 and mobs.slime.dead>=17 and mobs.slime.dead<18 and  mobs.goblin.dead<8 and scene.running==false) then
 			
 			if(#mobs.goblin.alive<6 and mobs.goblin.dead==2) spawn_goblin()
 			if(#mobs.slime.alive<1 and mobs.slime.dead==17) spawn_slime()
-			print("oleada 4 ", 10*8, 0)
 	
 	elseif(mobs.goblin.dead>=8 and mobs.slime.dead>=18 and mobs.goblin.dead<18 and scene.running==false) then
 	
 			if(#mobs.goblin.alive<10 and mobs.goblin.dead==8) spawn_goblin()
-			print("oleada 5 ", 10*8, 0)
 	
 	elseif(mobs.goblin.dead>=18 and scene.running==false) then				
 			
@@ -2006,7 +2013,7 @@ function draw_gui()
 					end
 					
 					--itembox
-	 			spr(itembox[player.item].sprt,22,0,1,1)
+	 			spr(itembox[player.item].sprt[1],22,0,1,1)
 	 			if(itembox[player.item].cooldown!=0) print(itembox[player.item].cooldown, 22, 2)
 	 	
 	 			--hp
@@ -2053,7 +2060,7 @@ function collect_item()
 			mset(player.x,player.y+1,128)
 			player.item="potion"
 			sfx(0)
-	-- collect knife
+	--[[ collect knife
 	elseif(mget(player.x,player.y)==104) then
 			mset(player.x,player.y,128)
 			mset(player.x+1,player.y+1,128)
@@ -2063,7 +2070,7 @@ function collect_item()
 			mset(player.x+1,player.y,128)
 			mset(player.x,player.y+1,128)
 			player.item="knife"
-			sfx(0)		
+			sfx(0)	]]	
 	-- collect apple
 	elseif(mget(player.x,player.y)==102) then
 			mset(player.x,player.y,128)
@@ -2107,23 +2114,39 @@ function use_item(i)
 			--sspr( 0, 96, 32, 32, 16, 64, 32, 32 )
 			----------------
 			
-	elseif(i=="knife") then
+	--[[elseif(i=="knife") then
 			
 			itembox[player.item].cooldown=120	
+	]]
 	end
 		 
 end
-
+--[[
 function draw_drops()
 
 for d in all(drops) do
-			spr(itembox[d.item].sprt, d.x, d.y, 2, 2)
+			if(d.item=="potion") then
+				map(22,14,d.x*8,d.y*8,2,2)
+				mset(d.x,d.y,70)
+			elseif(d.item=="bomb") then
+				map(20,14,d.x*8,d.y*8,2,2)
+				mset(d.x,d.y,68)
+			elseif(d.item=="apple") then
+				map(20,12,d.x*8,d.y*8,2,2)
+				mset(d.x,d.y,102)
+			elseif(d.item=="drumstick") then
+				map(22,12,d.x*8,d.y*8,2,2)
+				mset(d.x,d.y,110)
+			end
+			
+			--spr(itembox[d.item].sprt[2], d.x*8, d.y*8, 2, 2)
 			if(player.x==d.x and player.y==d.y) then			
 					del(drops, d)		
 			end
 end
 
 end
+]]
 -->8
 -- weapons and attacks
 
@@ -2230,10 +2253,10 @@ function draw_bomb()
 	
 		if(itembox.bomb.fuse%4==0) then
 		--normal bomb--
-			spr(itembox.bomb.bomb,posx,posy,2,2)
+			spr(itembox.bomb.sprt[2],posx,posy,2,2)
 		elseif((itembox.bomb.fuse%4)!=0) then
 		--primed bomb--
-			spr(itembox.bomb.primed,posx,posy,2,2)
+			spr(itembox.bomb.sprt[3],posx,posy,2,2)
 		end
 		itembox.bomb.fuse-=1
 	end
@@ -2434,10 +2457,10 @@ a88080808080808080808080808080b800000000000000000000000000000000efefefefefeff7f7
 a88080808080808080808080808080b800000000000000000000000000000000efefefefefefeff7f7f7f7f7f7f7f7f700000000dedfefefefefefeffefefefefefefefe00000000cef7f7f7f7dfdfdfdfdfdff7f7f7f7ce0000000000000000fefef7eeeeeeeeeeeeeeeeeeeef7fefef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
 a88080808080808080808080808080b800000000000000000000000000000000efefefefefefeff7f7f7f7f7f7f7f7f700000000deefefefefefefeeeeeeeeeeeeeeeeee00000000cef7f7f7f7dfdfdfdfdfdff7f7f7f7ce0000000000000000eeeef7fefefefefeeefefefefef7eeeef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
 a88080808080808080808080808080b800000000000000000000000000000000efefefefdefffffffffff7f7f7f7f7f700000000deefefefefefefeffefefefefefefefe00000000cef7f7f7dfdfdfdfdfdfdfdff7f7f7ce0000000000000000fefef7eeeeeeeeeeeeeeeeeeeef7fefef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
-a88080808080808080808080808080b800000000000000000000000000000000deefdededeefefeffff7f7f7f7f7f7f700000000deefefefefefefefeeeeeeeeeeeeeeee00000000cef7f7f7dfdfdfdfdfdfdfdff7f7f7ce0000000000000000feeef7fefeeefefefefeeefefef7eefef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
-a88080806869806667804647804445b800000000000000000000000000000000efdeefefdeefefeffff7f7f7f7f7f7f700000000ffefefefefeffffffffffffefefefefe00000000cef7f7f7dfdfdfdfdfdfdfdff7f7f7ce0000000000000000eefef7f7f7f7f7f7f7f7f7f7f7f7feeef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
-a89383807879807677805657805455b800000000000000000000000000000000efefefefefdedffdfdf7f7f7f7f7f7f700000000dedeefdedeefefefefffeeeeeeeeeeee00000000cef7f7f7dfdfdfdfdfdfdfdff7f7f7ce0000000000000000fec0eefefeeefeeefefeeefefeeef7fef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
-b5b7b7b7b7b7b7b7b7b7b7b7b7b7b7b600007500000000000000000000000000efefefefefc0dfdffdf7f7f7f7f7f7f700000000efefdeefefefefefefffcfcfcfcfcfcf00000000cececececececececececececececece0000000000000000c0eefefeeefefeeefefefeeefefeeef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
+a88080808080808080808080808080b80000000066676e6f0000000000000000deefdededeefefeffff7f7f7f7f7f7f700000000deefefefefefefefeeeeeeeeeeeeeeee00000000cef7f7f7dfdfdfdfdfdfdfdff7f7f7ce0000000000000000feeef7fefeeefefefefeeefefef7eefef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
+a88080808080808080808080808080b80000000076777e7f0000000000000000efdeefefdeefefeffff7f7f7f7f7f7f700000000ffefefefefeffffffffffffefefefefe00000000cef7f7f7dfdfdfdfdfdfdfdff7f7f7ce0000000000000000eefef7f7f7f7f7f7f7f7f7f7f7f7feeef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
+a89383808080808080808080808080b800000000444546470000000000000000efefefefefdedffdfdf7f7f7f7f7f7f700000000dedeefdedeefefefefffeeeeeeeeeeee00000000cef7f7f7dfdfdfdfdfdfdfdff7f7f7ce0000000000000000fec0eefefeeefeeefefeeefefeeef7fef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
+b5b7b7b7b7b7b7b7b7b7b7b7b7b7b7b600007500545556570000000000000000efefefefefc0dfdffdf7f7f7f7f7f7f700000000efefdeefefefefefefffcfcfcfcfcfcf00000000cececececececececececececececece0000000000000000c0eefefeeefefeeefefefeeefefeeef7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7f7
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cecececef7f7f7f7f7f7f7f7cececece
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cecececef7f7f7f7f7f7f7f7cececece
 00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000cecececef7f7f7f7f7f7f7f7cececece
