@@ -785,7 +785,7 @@ function spawn_mobs()
  		
  				--triggers boss entrance scene
 					scene.timer=5000
-					scene.number=2
+					scene.number=1
 					scene.running=true
 					
  				--spawns boss
@@ -1676,7 +1676,7 @@ function draw_scene(n)
 		------------------------------
 		
 		
-		print(extra,6*8-2, 8*8)
+		--print(extra,6*8-2, 8*8)
 		
 	elseif(n==2) then --player death
 		
@@ -1751,8 +1751,8 @@ function draw_scene(n)
 			end
 		 scene.auxcount=-1
 		end
-		print(scene.auxbool,6*8-2, 8*8)
-		print(scene.auxcount,6*8-2, 8*9)
+		--print(scene.auxbool,6*8-2, 8*8)
+		--print(scene.auxcount,6*8-2, 8*9)
 		--------------------------
 		
 		if(scene.timer<=4990 and scene.timer>4940) then
@@ -1844,7 +1844,7 @@ function draw_scene(n)
 	if(btnp(🅾️) and scene.timer<4990) scene.timer=1
 	if(btnp(❎) and scene.timer<4990) scene.xcounter+=1
 	
-	print(scene.timer, 13*8, 24, 8)
+	--print(scene.timer, 13*8, 24, 8)
 	drawind()
 
 end
