@@ -16,8 +16,12 @@ mobs = {
  	dead= 0,
  	drops={
  		bomb={
- 			prob=100,
- 			item="apple",
+ 			prob=3,
+ 			item="bomb",
+ 		},
+ 		drumstick={
+ 			prob=11,
+ 			item="drumstick",
  		},
  		--[[knife={
  			prob=10,
@@ -30,15 +34,15 @@ mobs = {
  	dead= 0,
  	drops={
  		apple={
- 			prob=10,
+ 			prob=16,
  			item="apple",
  		},
  		potion={
- 			prob=2,
+ 			prob=3,
  			item="potion",
  		},
  		drumstick={
- 			prob=5,
+ 			prob=6,
  			item="drumstick",
  		},		
  	},
@@ -46,7 +50,7 @@ mobs = {
 }
 
 scene= {
-	number=0,
+	number=-1,
 	running=true,
 	timer=5000,
 	xcounter=0,
@@ -281,7 +285,7 @@ function _draw()
 	
 			draw_weapon()
 			
-			--draw_drops()
+			draw_drops()
 		
 			draw_bomb()
 	
@@ -401,6 +405,12 @@ function _update()
 			
 			--allows the collection of items
 			collect_item()
+	elseif(scene.number==-1 and (btnp(🅾️) or btnp(❎))) then
+			scene.xcounter=0
+			scene.number = 0
+			scene.timer = 5000
+			scene.running=true
+			
 	elseif(scene.number==0 and scene.timer==0) then
 			scene.xcounter=0
 			del( wind, wind[1] )
@@ -522,11 +532,11 @@ function solid_actor(a, dx, dy)
 					if (a.dmg_cooldown==0) then
 						
 						--drops item if corresponds
-						--[[
+						
 						if((a.name=="goblin" or a.name=="slime") and (a.hp-1==0)) then
 								drop(a)
 						end
-						]]
+						
 						
 						--deals damage to the mob
 						a.hp=a.hp-a2.dmg
@@ -549,7 +559,7 @@ function solid_actor(a, dx, dy)
 				or 
 				(a2.name=="sword" and (a.name=="slime" or a.name=="goblin"))			
 				) then
-				if (dx != 0 and abs(x) <
+				if (a.dx != 0 and abs(a.x) <
 				    abs(a.x-a2.x))
 				then
 					v=abs(a.dx)>abs(a2.dx) and 
@@ -564,7 +574,7 @@ function solid_actor(a, dx, dy)
 			
 				-- along y
 				
-				if (dy != 0 and abs(y) <
+				if (a.dy != 0 and abs(a.y) <
 					   abs(a.y-a2.y)) then
 					v=abs(a.dy)>abs(a2.dy) and 
 					  a.dy or a2.dy
@@ -696,8 +706,8 @@ function drop (mob)
 			end	]]						
 	end
 	
-	print(mob.name)
-	print(drop)
+	--print(mob.name)
+	--print(drop)
 
  if (rnd(100) < mobs[mob.name].drops[drop].prob) then
 			-- add drop to spawned drops
@@ -706,6 +716,7 @@ function drop (mob)
 				y=mob.y,
 				item=mobs[mob.name].drops[drop].item,
 			}		
+			
 			add(drops, drop)			
 	end
  
@@ -847,6 +858,8 @@ function draw_slime()
 		
 		ac=0.02 -- acceleration
 		
+		slime_ia()
+		
 		if not solid_a(s, s.dx, 0) then
 			s.x += s.dx
 		else
@@ -861,13 +874,13 @@ function draw_slime()
 		
 		----------------------------
 		----------------------------
-		slime_ia()
+		
 		----------------------------
 		----------------------------
 		
 		-- friction (lower for more)
-		s.dx *=.09
-		s.dy *=.09
+		--s.dx *=.09
+		--s.dy *=.09
 		
 		spd=sqrt(s.dx*s.dx+s.dy*s.dy)
 		s.f= (s.f+spd*35) % s.anims[s.d].fr 
@@ -901,7 +914,7 @@ function draw_slime()
 			]]
 		end
 		-------------------------------		
-	
+		
 		-----------draw blood--------
 		if (s.hptrack>s.hp and s.hp>0) then
 					add_blood(s)
@@ -921,25 +934,25 @@ function distance (p, m)
 end
 
 function slime_ia()
-
+	local ac = 0.05
 	for s in all(mobs.slime.alive) do
 	
 		if(distance (player, s)>1) then	
 				if(player.x>s.x) then		
-						s.dx+= ac
+						s.dx= ac
 						s.d= "walking"			
 				elseif(player.x<s.x) then				
-						s.dx-= ac
+						s.dx= -ac
 						s.d= "walking"				
 				elseif(flr(player.x)==flr(s.x)) then				
 						if(player.y>s.y) then					
-								s.dy+= 0.0005
+								s.dy= ac
 								s.d= "walking"					
 						elseif(player.y<s.y) then						
-								s.dy-= 0.0005
+								s.dy= -ac
 								s.d= "walking"					
 						end
-						
+						--[[
 						if(rnd(100)<30) then
 								if(player.y>s.y) then					
 										s.y+= 2
@@ -950,25 +963,26 @@ function slime_ia()
 										s.x+= 2
 										s.d= "walking"					
 								end
-						end
+						end]]
 									
 				end
 				
 				if(player.y>s.y) then		
-						s.dy+= ac
+						s.dy= ac
 						s.d= "walking"			
 				elseif(player.y<s.y) then				
-						s.dy-= ac
+						s.dy= -ac
 						s.d= "walking"				
 				elseif(flr(player.y)==flr(s.y)) then				
 						if(player.x>s.x) then					
-								s.dx+= 0.0005
+								s.dx= ac
 								s.d= "walking"					
 						elseif(player.x<s.x) then						
-								s.dx-= 0.0005
+								s.dx= -ac
 								s.d= "walking"					
 						end
 						
+						--[[
 						if(rnd(100)<70) then
 								if(player.x>s.x) then					
 										s.x+= 2
@@ -979,11 +993,11 @@ function slime_ia()
 										s.y+= 2
 										s.d= "walking"					
 								end
-						end
+						end]]
 									
 				end
 		
-		elseif(distance (player, s)<2) then		
+		--[[elseif(distance (player, s)<2) then		
 			 
 			 if(flr(player.x)==flr(s.x)) then
 			 		if(player.x>s.x) then					
@@ -1001,7 +1015,7 @@ function slime_ia()
 								s.x-= 2
 								s.d= "walking"					
 						end
-			 end			 
+			 end]]			 
 		end
 		
 		if(s.x<1 or s.x>14 or s.y<1 or s.y>14) then
@@ -1056,6 +1070,12 @@ function draw_goblin()
 		
 		ac=0.1 -- acceleration
 		
+		----------------------------
+		----------------------------
+		goblin_ia()
+		----------------------------
+		----------------------------
+		
 		if not solid_a(g, g.dx, 0) then
 			g.x += g.dx
 		else
@@ -1068,15 +1088,9 @@ function draw_goblin()
 			g.dy *= -g.bounce
 		end
 		
-		----------------------------
-		----------------------------
-		goblin_ia()
-		----------------------------
-		----------------------------
-		
 		-- friction (lower for more)
-		g.dx *=.3
-		g.dy *=.3
+		--g.dx *=.3
+		--g.dy *=.3
 	
 		spd=sqrt(g.dx*g.dx+g.dy*g.dy)
 		g.f= (g.f+spd*2) % g.anims[g.d].fr 
@@ -1108,7 +1122,7 @@ function draw_goblin()
 			]]
 		end
 		-------------------------------		
-	
+		
 		-----------draw blood--------
 		if (g.hptrack>g.hp and g.hp>0) then
 					add_blood(g)
@@ -1121,22 +1135,22 @@ function draw_goblin()
 end
 
 function goblin_ia()
-
+	local ac = 0.1
 	for g in all(mobs.goblin.alive) do
 	
 		if(distance (player, g)>4) then	
 				if(player.x>g.x) then		
-						g.dx+= ac
+						g.dx= ac
 						g.d= "walking"			
 				elseif(player.x<g.x) then				
-						g.dx-= ac
+						g.dx= -ac
 						g.d= "walking"				
 				elseif(flr(player.x)==flr(g.x)) then				
 						if(player.y>g.y) then					
-								g.dy+= 0.0005
+								g.dy= ac
 								g.d= "walking"					
 						elseif(player.y<g.y) then						
-								g.dy-= 0.0005
+								g.dy= -ac
 								g.d= "walking"					
 						end
 						
@@ -1155,17 +1169,17 @@ function goblin_ia()
 				end
 				
 				if(player.y>g.y) then		
-						g.dy+= ac
+						g.dy= ac
 						g.d= "walking"			
 				elseif(player.y<g.y) then				
-						g.dy-= ac
+						g.dy= -ac
 						g.d= "walking"				
 				elseif(flr(player.y)==flr(g.y)) then				
 						if(player.x>g.x) then					
-								g.dx+= 0.0005
+								g.dx= ac
 								g.d= "walking"					
 						elseif(player.x<g.x) then						
-								g.dx-= 0.0005
+								g.dx= -ac
 								g.d= "walking"					
 						end
 						
@@ -1189,7 +1203,7 @@ function goblin_ia()
 			 		if(player.x>g.x) then
 			 		
 			 				if(player.d=="walkright") then
-			 						g.dx+= 0.9
+			 						g.dx= ac
 			 				elseif(rnd(100)<30) then
 			 						if(player.x<=12) g.x= player.x+2
 			 				end					
@@ -1197,7 +1211,7 @@ function goblin_ia()
 						elseif(player.x<g.x) then
 						
 								if(player.d=="walkleft") then
-			 						g.dx-= 0.9
+			 						g.dx= -ac
 			 				elseif(rnd(100)<30) then
 			 						if(player.x>=3) g.x= player.x-2
 			 				end						
@@ -1207,7 +1221,7 @@ function goblin_ia()
 			 		if(player.y>g.y) then
 			 		
 			 				if(player.d=="walkdown") then
-			 						g.dy+= 0.9
+			 						g.dy= ac
 			 				elseif(rnd(100)<30) then
 			 						if(player.y<=12) g.y= player.y+2
 			 				end						
@@ -1215,7 +1229,7 @@ function goblin_ia()
 						elseif(player.y<g.y) then	
 						
 								if(player.d=="walkup") then
-			 						g.dy-= 0.9
+			 						g.dy= -ac
 			 				elseif(rnd(100)<30) then
 			 						if(player.y>=3) g.y= player.y-2
 			 				end						
@@ -1584,6 +1598,7 @@ scene4={}
 
 scene5={}
 
+title={}
 
 translator={
 	dialog1=1,
@@ -1595,8 +1610,27 @@ translator={
 }
 
 function draw_scene(n)
-
-	if(n==0) then     --initial scene
+	
+	if(n==-1) then
+		flip_sheet(2)
+		map(00, 16, 0, 0, 16, 16)
+		--letters--
+		--the------
+		sspr( 16, 64, 8, 8, 40, 16, 16,16 )
+		sspr( 24, 64, 8, 8, 56, 16, 16,16 )
+		sspr( 32, 64, 8, 8, 72, 16, 16,16 )
+		--dying----
+		sspr( 40, 64, 8, 8, 24, 40, 16,16 )
+		sspr( 48, 64, 8, 8, 40, 40, 16,16 )
+		sspr( 56, 64, 8, 8, 56, 40, 16,16 )
+		sspr( 64, 64, 8, 8, 72, 40, 16,16 )
+		sspr( 72, 64, 8, 8, 88, 40, 16,16 )
+		--room-----
+		sspr( 40, 72, 8, 8, 32, 64, 16,16 )
+		sspr( 48, 72, 8, 8, 48, 64, 16,16 )
+		sspr( 56, 72, 8, 8, 64, 64, 16,16 )
+		sspr( 64, 72, 8, 8, 80, 64, 16,16 )
+	elseif(n==0) then     --initial scene
 		--local aux = (scene.timer-4990)/3 -- era (scene.timer-4990)
 		--local extra = ((aux)/(1000/aux))
 		--print("actual_sheet: "..actual_sheet, 1, 16, 10)
@@ -1840,7 +1874,7 @@ function draw_scene(n)
 
 	end
 	
-	if(player.hp>0) print('presiona z para saltear', 2*8, 0*8)
+	if((player.hp>0)and(scene.number!=-1)) print('presiona z para saltear', 2*8, 0*8)
 	if(btnp(🅾️) and scene.timer<4990) scene.timer=1
 	if(btnp(❎) and scene.timer<4990) scene.xcounter+=1
 	
@@ -2037,6 +2071,39 @@ function draw_gui()
 end
 
 function collect_item()
+	for d in all(drops) do
+		if (player.x + 2 > d.x and player.y + 2 > d.y and player.x < d.x + 2 and player.y < d.y + 2) then
+			-- collect bomb
+			if (d.item=="bomb") then
+					player.item="bomb"
+					sfx(0)
+					del(drops,d)
+			-- collect potion		
+			elseif(d.item=="potion") then
+			
+					player.item="potion"
+					sfx(0)
+					del(drops,d)
+			-- collect apple
+			elseif(d.item=="apple") then
+
+					if(player.hp<8) player.hp=player.hp+1
+					sfx(0)
+					del(drops,d)
+			-- collect drumstick
+			elseif(d.item=="drumstick") then
+					if(player.hp==7) player.hp=player.hp+1
+					if(player.hp<7) player.hp=player.hp+2
+					sfx(0)
+					del(drops,d)	
+			end
+			
+		end
+	end
+end
+
+--[[
+function collect_item()
 
 	-- collect bomb
 	if (mget(player.x,player.y)==68) then
@@ -2096,7 +2163,7 @@ function collect_item()
 	end
 		 
 end
-
+]]
 function use_item(i)
 
 	if(i=="potion") then
@@ -2121,22 +2188,22 @@ function use_item(i)
 	end
 		 
 end
---[[
-function draw_drops()
 
+function draw_drops()
+print(#drops, 13*8, 0, 9)
 for d in all(drops) do
 			if(d.item=="potion") then
 				map(22,14,d.x*8,d.y*8,2,2)
-				mset(d.x,d.y,70)
+				--mset(d.x,d.y,70)
 			elseif(d.item=="bomb") then
 				map(20,14,d.x*8,d.y*8,2,2)
-				mset(d.x,d.y,68)
+				--mset(d.x,d.y,68)
 			elseif(d.item=="apple") then
 				map(20,12,d.x*8,d.y*8,2,2)
-				mset(d.x,d.y,102)
+				--mset(d.x,d.y,102)
 			elseif(d.item=="drumstick") then
 				map(22,12,d.x*8,d.y*8,2,2)
-				mset(d.x,d.y,110)
+				--mset(d.x,d.y,110)
 			end
 			
 			--spr(itembox[d.item].sprt[2], d.x*8, d.y*8, 2, 2)
@@ -2146,7 +2213,7 @@ for d in all(drops) do
 end
 
 end
-]]
+
 -->8
 -- weapons and attacks
 
